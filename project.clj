@@ -1,13 +1,14 @@
 (defproject battery-measurements-api "0.1.0-SNAPSHOT"
 
-  :description "FIXME: write description"
-  :url "http://example.com/FIXME"
+  :description "Api to store battery measurements in the sonnen db"
+  :url "https://git.sonnenbatterie.de/digital-dev/microservices/battery-measurements-api"
 
   :dependencies [[buddy "2.0.0"]
                  [ch.qos.logback/logback-classic "1.2.3"]
                  [cheshire "5.8.1"]
                  [clojure.java-time "0.3.2"]
                  [com.google.protobuf/protobuf-java "3.6.1"]
+                 [com.layerware/hugsql "0.4.9"]
                  [conman "0.8.3"]
                  [cprop "0.1.13"]
                  [funcool/struct "1.3.0"]

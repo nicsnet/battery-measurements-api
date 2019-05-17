@@ -13,10 +13,10 @@
     [clojure.java.io :as io]))
 
 (defn service-routes []
-  ["/api"
+  ["/havel"
    {:coercion spec-coercion/coercion
     :muuntaja formats/instance
-    :swagger {:id ::api}
+    :swagger {:id ::havel}
     :middleware [;; query-params & form-params
                  parameters/parameters-middleware
                  ;; content-negotiation
@@ -36,56 +36,32 @@
 
    ;; swagger documentation
    ["" {:no-doc true
-        :swagger {:info {:title "my-api"
-                         :description "https://cljdoc.org/d/metosin/reitit"}}}
+        :swagger {:info {:title "battery-measurements-api"
+                         :description "Api to store spree battery measurements in the sonnen db"}}}
 
     ["/swagger.json"
      {:get (swagger/create-swagger-handler)}]
 
     ["/api-docs/*"
      {:get (swagger-ui/create-swagger-ui-handler
-             {:url "/api/swagger.json"
+             {:url "/havel/swagger.json"
               :config {:validator-url nil}})}]]
 
-   ["/ping"
-    {:get (constantly (ok {:message "pong"}))}]
+   ["/accounts/:account_mac_address"
+    {:swagger {:tags ["operating_data"]}}
 
-
-   ["/math"
-    {:swagger {:tags ["math"]}}
-
-    ["/plus"
-     {:get {:summary "plus with spec query parameters"
-            :parameters {:query {:x int?, :y int?}}
-            :responses {200 {:body {:total pos-int?}}}
-            :handler (fn [{{{:keys [x y]} :query} :parameters}]
-                       {:status 200
-                        :body {:total (+ x y)}})}
-      :post {:summary "plus with spec body parameters"
+    ["/operating_data"
+     {:post {:summary "Create new measurements"
              :parameters {:body {:x int?, :y int?}}
              :responses {200 {:body {:total pos-int?}}}
              :handler (fn [{{{:keys [x y]} :body} :parameters}]
                         {:status 200
-                         :body {:total (+ x y)}})}}]]
+                         :body {:total (+ x y)}})}}]
 
-   ["/files"
-    {:swagger {:tags ["files"]}}
-
-    ["/upload"
-     {:post {:summary "upload a file"
-             :parameters {:multipart {:file multipart/temp-file-part}}
-             :responses {200 {:body {:name string?, :size int?}}}
-             :handler (fn [{{{:keys [file]} :multipart} :parameters}]
+    ["/events"
+     {:post {:summary "Create new events"
+             :parameters {:body {:x int?, :y int?}}
+             :responses {200 {:body {:total pos-int?}}}
+             :handler (fn [{{{:keys [x y]} :body} :parameters}]
                         {:status 200
-                         :body {:name (:filename file)
-                                :size (:size file)}})}}]
-
-    ["/download"
-     {:get {:summary "downloads a file"
-            :swagger {:produces ["image/png"]}
-            :handler (fn [_]
-                       {:status 200
-                        :headers {"Content-Type" "image/png"}
-                        :body (-> "public/img/warning_clojure.png"
-                                  (io/resource)
-                                  (io/input-stream))})}}]]])
+                         :body {:total (+ x y)}})}}]]])
