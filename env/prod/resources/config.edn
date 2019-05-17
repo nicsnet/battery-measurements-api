@@ -1,0 +1,3 @@
+{:prod true
+ :database-url "jdbc:mysql://db:3306/sonnen-db?user=sonnen&password=sonnen"
+ :port 3000}

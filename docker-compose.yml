@@ -1,0 +1,21 @@
+version: "3.7"
+services:
+  battery-measurements-api:
+    build: .
+    ports:
+      - "3006:3000"
+    links:
+      - db
+    environment:
+      - DATABASE_URL="jdbc:mysql://db:3306/sonnen-db?user=sonnen&password=sonnen&useSSL=false"
+
+  db:
+    image: mysql
+    restart: always
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: sonnen-db
+      MYSQL_USER: sonnen
+      MYSQL_PASSWORD: sonnen
