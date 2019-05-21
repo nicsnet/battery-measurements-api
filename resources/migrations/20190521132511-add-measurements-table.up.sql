@@ -1,0 +1,20 @@
+CREATE TABLE `measurements` (
+  `timestamp` datetime NOT NULL DEFAULT '1970-01-01 00:00:00',
+  `serial` mediumint(8) unsigned NOT NULL,
+  `m01` mediumint(8) unsigned DEFAULT NULL,
+  `m02` mediumint(8) unsigned DEFAULT NULL,
+  `m03` mediumint(8) unsigned DEFAULT NULL,
+  `m04` mediumint(8) unsigned DEFAULT NULL,
+  `m05` tinyint(3) unsigned DEFAULT NULL,
+  `m06` tinyint(3) unsigned DEFAULT NULL,
+  `m07` mediumint(8) unsigned DEFAULT NULL,
+  `m08` mediumint(8) unsigned DEFAULT NULL,
+  `m09` mediumint(8) unsigned DEFAULT NULL,
+  `m10` mediumint(8) unsigned DEFAULT NULL,
+  `m11` mediumint(8) unsigned DEFAULT NULL,
+  `m12` mediumint(8) unsigned DEFAULT NULL,
+  `m13` mediumint(9) unsigned DEFAULT NULL,
+  `work01` float DEFAULT NULL,
+  `work02` float DEFAULT NULL,
+  PRIMARY KEY (`serial`,`timestamp`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
