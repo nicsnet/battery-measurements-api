@@ -9,7 +9,7 @@ The battery measurements api is a service extracted out of the Core api. It is w
 
 ## Prerequisites
 
-You will need [Leiningen](https://github.com/technomancy/leiningen] 2.0 or above installed, as well as [Docker](https://www.docker.com/get-docker)
+You will need [Leiningen](https://github.com/technomancy/leiningen) 2.0 or above installed, as well as [Docker](https://www.docker.com/get-docker)
 
 
 [1]: https://github.com/technomancy/leiningen
