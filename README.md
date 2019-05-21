@@ -25,8 +25,8 @@ For normal development:
  1. Run `docker-compose up -d db`
  2. For the first run, run `lein run migrate`.
  3. Run `lein repl`. This can take a few minutes the first time.
- 4. When you see `user=>`, you have a running prompt. Run `(init)` and `(start)`
- 5. Now the service should be up and running at [http://localhost:3006](http://localhost:3006)
+ 4. When you see `user=>`, you have a running prompt. Run `(start)`
+ 5. Now the service should be up and running at [http://localhost:3000](http://localhost:3000)
  6. You can connect to the nREPL with the editor of your choice:
      - In vim, you can use [Vim Fireplace](https://github.com/tpope/vim-fireplace) to `:Connect` to the nREPL port
      - In emacs/spacemacs you can use `M-x cider-connect` assuming you have cider installed (with spacemacs, enable the `clojure` layer and you can use the shortcut `, s c`)
