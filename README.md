@@ -31,3 +31,9 @@ For normal development:
      - In emacs/spacemacs you can use `M-x cider-connect` assuming you have cider installed (with spacemacs, enable the `clojure` layer and you can use the shortcut `, s c`)
      - In IntelliJ with Cursive you can connect with a Remote REPL using a Leiningen REPL Port (see [the Cursive REPL documentation](https://cursive-ide.com/userguide/images/remote-repl-config.png))
      - You can also type things into the same terminal window you typed `(start)` in, but this can be less powerful.
+
+## Database
+
+For technical reasons the **Sonnen-DB**  is still running on a `MySQL 5.x` version on production. This is why we don't use the latest version of `mysql-connector-java`.
+
+Run `docker-compose up db` to start the MySQL DB in the docker container.
