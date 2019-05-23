@@ -12,6 +12,48 @@
     [ring.util.http-response :refer :all]
     [clojure.java.io :as io]))
 
+(def operating-data {:settings {:inverter_power_kw any?
+                                :pvsize_kw any?
+                                :marketing_module_capacity int?
+                                :maxfeedin_percent int?
+                                :capacity_kw any?
+                                :spree_version int?
+                                :timezone string?
+                                :TimezoneOffset int?}
+                     :rows [{:bms_sony {:CCL_mA int?
+                                        :RSOC_0.1% int?
+                                        :MINMDCV_mV int?
+                                        :MAXCV_mV int?
+                                        :MINMC_mA int?
+                                        :ST_sec int?
+                                        :SDCV_mV int?
+                                        :SAC_mA int?
+                                        :MINCT_0.1K int?
+                                        :RC_mAh int?
+                                        :CC int?
+                                        :DCL_mA int?
+                                        :FFC_mAh int?
+                                        :MAXMC_mA int?
+                                        :ModId int?
+                                        :SS int?
+                                        :MAXCT_0.1K int?
+                                        :MINCV_mV int?
+                                        :SW int?
+                                        :SOH_0.1% int?
+                                        :MAXMDCV_mV int?
+                                        :SA int?
+                                        :SC_mA int?}
+
+                             :id int?
+                             :timestamp string?
+                             :measurements {:Consumption_W int?
+                                            :Pac_total_W int?
+                                            :USOC int?
+                                            :Production_W int?}}]})
+
+(defn operating-data-handler [{{{:keys [settings rows]} :body} :parameters}]
+    {:status 200 :body {:my-int 1}})
+
 (defn service-routes []
   ["/havel"
    {:coercion spec-coercion/coercion
@@ -52,16 +94,6 @@
 
     ["/operating_data"
      {:post {:summary "Create new measurements"
-             :parameters {:body {:x int?, :y int?}}
-             :responses {200 {:body {:total pos-int?}}}
-             :handler (fn [{{{:keys [x y]} :body} :parameters}]
-                        {:status 200
-                         :body {:total (+ x y)}})}}]
-
-    ["/events"
-     {:post {:summary "Create new events"
-             :parameters {:body {:x int?, :y int?}}
-             :responses {200 {:body {:total pos-int?}}}
-             :handler (fn [{{{:keys [x y]} :body} :parameters}]
-                        {:status 200
-                         :body {:total (+ x y)}})}}]]])
+             :parameters {:body operating-data}
+             :responses {200 {:body any?}}
+             :handler operating-data-handler}}]]])

@@ -18,7 +18,7 @@
                  [luminus/ring-ttl-session "0.3.2"]
                  [markdown-clj "1.10.0"]
                  [metosin/muuntaja "0.6.4"]
-                 [metosin/reitit "0.3.1"]
+                 [metosin/reitit "0.3.2"]
                  [metosin/ring-http-response "0.9.1"]
                  [mount "0.1.16"]
                  [mysql/mysql-connector-java "5.1.47"]
