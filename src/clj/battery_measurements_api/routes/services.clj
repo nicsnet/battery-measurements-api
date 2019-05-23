@@ -1,58 +1,71 @@
 (ns battery-measurements-api.routes.services
   (:require
-    [reitit.swagger :as swagger]
-    [reitit.swagger-ui :as swagger-ui]
-    [reitit.ring.coercion :as coercion]
-    [reitit.coercion.spec :as spec-coercion]
-    [reitit.ring.middleware.muuntaja :as muuntaja]
-    [reitit.ring.middleware.multipart :as multipart]
-    [reitit.ring.middleware.parameters :as parameters]
-    [battery-measurements-api.middleware.formats :as formats]
-    [battery-measurements-api.middleware.exception :as exception]
-    [ring.util.http-response :refer :all]
-    [clojure.java.io :as io]))
+   [reitit.swagger :as swagger]
+   [reitit.swagger-ui :as swagger-ui]
+   [reitit.ring.coercion :as coercion]
+   [reitit.coercion.spec :as spec-coercion]
+   [reitit.ring.middleware.muuntaja :as muuntaja]
+   [reitit.ring.middleware.multipart :as multipart]
+   [reitit.ring.middleware.parameters :as parameters]
+   [battery-measurements-api.middleware.formats :as formats]
+   [battery-measurements-api.middleware.exception :as exception]
+   [ring.util.http-response :refer :all]
+   [clojure.java.io :as io]
+   [battery-measurements-api.measurements :as m]))
 
-(def operating-data {:settings {:inverter_power_kw any?
-                                :pvsize_kw any?
-                                :marketing_module_capacity int?
-                                :maxfeedin_percent int?
-                                :capacity_kw any?
-                                :spree_version int?
-                                :timezone string?
-                                :TimezoneOffset int?}
-                     :rows [{:bms_sony {:CCL_mA int?
-                                        :RSOC_0.1% int?
-                                        :MINMDCV_mV int?
-                                        :MAXCV_mV int?
-                                        :MINMC_mA int?
-                                        :ST_sec int?
-                                        :SDCV_mV int?
-                                        :SAC_mA int?
-                                        :MINCT_0.1K int?
-                                        :RC_mAh int?
-                                        :CC int?
-                                        :DCL_mA int?
-                                        :FFC_mAh int?
-                                        :MAXMC_mA int?
-                                        :ModId int?
-                                        :SS int?
-                                        :MAXCT_0.1K int?
-                                        :MINCV_mV int?
-                                        :SW int?
-                                        :SOH_0.1% int?
-                                        :MAXMDCV_mV int?
-                                        :SA int?
-                                        :SC_mA int?}
+(def settings
+  {:inverter_power_kw any?
+   :pvsize_kw any?
+   :marketing_module_capacity int?
+   :maxfeedin_percent int?
+   :capacity_kw int?
+   :spree_version int?
+   :timezone string?
+   :TimezoneOffset int?})
 
-                             :id int?
-                             :timestamp string?
-                             :measurements {:Consumption_W int?
-                                            :Pac_total_W int?
-                                            :USOC int?
-                                            :Production_W int?}}]})
+(def measurements
+  {:Consumption_W int?
+   :Pac_total_W int?
+   :USOC int?
+   :Production_W int?})
+
+(def rows
+  [{:bms_sony {:CC int?
+               :CCL_mA int?
+               :DCL_mA int?
+               :FFC_mAh int?
+               :MAXCV_mV int?
+               :MAXCT_0.1K int?
+               :MAXMDCV_mV int?
+               :MAXMC_mA int?
+               :MINMDCV_mV int?
+               :MINMC_mA int?
+               :MINCT_0.1K int?
+               :MINCV_mV int?
+               :ModId int?
+               :RC_mAh int?
+               :RSOC_0.1% int?
+               :SA int?
+               :SAC_mA int?
+               :SC_mA int?
+               :SDCV_mV int?
+               :SOH_0.1% int?
+               :SS int?
+               :ST_sec int?
+               :SW int?}
+
+    :id int?
+    :timestamp string?
+    :measurements measurements}])
+
+(def operating-data {:settings settings
+                     :rows rows})
+
+
 
 (defn operating-data-handler [{{{:keys [settings rows]} :body} :parameters}]
-    {:status 200 :body {:my-int 1}})
+  (m/create-measurement (:measurements (first rows)))
+    {:status 200 :body {:my-int (:measurements (first rows))}})
 
 (defn service-routes []
   ["/havel"
