@@ -61,10 +61,8 @@
 (def operating-data {:settings settings
                      :rows rows})
 
-
-
 (defn operating-data-handler [{{{:keys [settings rows]} :body} :parameters}]
-  (m/create-measurement (:measurements (first rows)))
+  (m/create-measurements (map :measurements rows))
     {:status 200 :body {:my-int (:measurements (first rows))}})
 
 (defn service-routes []
