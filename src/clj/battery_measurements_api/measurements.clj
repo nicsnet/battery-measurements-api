@@ -1,6 +1,5 @@
 (ns battery-measurements-api.measurements
   (:require [clojure.set :refer [rename-keys]]
-            [clojure.walk :refer [postwalk-replace]]
             [conman.core :as conman]
             [taoensso.timbre :as timbre]
             [battery-measurements-api.db.core :as db]))
@@ -19,20 +18,20 @@
     (assoc measurement :discharge (if (pos-int? discharge) discharge 0)
            :charge (if (neg-int? charge) (* -1 charge) 0))))
 
-(defn convert-measurements [input-json]
-  (->> input-json
+(defn convert-measurements [data serial]
+  (->> data
        (map (fn [x] {:consumption (:Consumption_W x)
                     :production (:Production_W x)
                     :state_of_charge (:USOC x)
                     :timestamp (java.util.Date.)
-                    :serial  (rand-int 10000)
+                    :serial serial
                     :discharge (:Pac_total_W x)
                     :charge (:Pac_total_W x)} ))
        (map (fn [m] (assign-charge-and-discharge m)))
        (map #(rename-keys % db-columns))))
 
-(defn create-measurements [m]
-  (let [measurements (convert-measurements m)]
+(defn create-measurements! [m s]
+  (let [measurements (convert-measurements m s)]
     (println measurements)
   (conman/with-transaction [db/*db*]
     (timbre/info "Inserting into the measurements table")

@@ -7,10 +7,11 @@
    [reitit.ring.middleware.muuntaja :as muuntaja]
    [reitit.ring.middleware.multipart :as multipart]
    [reitit.ring.middleware.parameters :as parameters]
+   [ring.util.http-response :refer :all]
+   [taoensso.timbre :as timbre]
    [battery-measurements-api.middleware.formats :as formats]
    [battery-measurements-api.middleware.exception :as exception]
-   [ring.util.http-response :refer :all]
-   [clojure.java.io :as io]
+   [battery-measurements-api.accounts :as a]
    [battery-measurements-api.measurements :as m]))
 
 (def settings
@@ -61,9 +62,16 @@
 (def operating-data {:settings settings
                      :rows rows})
 
-(defn operating-data-handler [{{{:keys [settings rows]} :body} :parameters}]
-  (m/create-measurements (map :measurements rows))
-    {:status 200 :body {:my-int (:measurements (first rows))}})
+(defn create-measurements! [measurements serial]
+  (if-let [account-serial (a/find-or-create-account! serial)]
+    (do (m/create-measurements! measurements account-serial)
+        {:status 200 :body {:my-int measurements}})
+    (not-found)))
+
+(defn operating-data-handler [{{path :path {:keys [settings rows]} :body} :parameters}]
+  (let [measurements (map :measurements rows)
+        serial (:unit-serial path)]
+    (create-measurements! measurements serial)))
 
 (defn service-routes []
   ["/havel"
@@ -100,11 +108,12 @@
              {:url "/havel/swagger.json"
               :config {:validator-url nil}})}]]
 
-   ["/accounts/:account_mac_address"
+   ["/units/:unit-serial"
     {:swagger {:tags ["operating_data"]}}
 
     ["/operating_data"
      {:post {:summary "Create new measurements"
-             :parameters {:body operating-data}
-             :responses {200 {:body any?}}
+             :parameters {:body operating-data :path {:unit-serial int?}}
+             :responses {200 {:body any?}
+                         404 {:description "Account for serial not found"}}
              :handler operating-data-handler}}]]])
