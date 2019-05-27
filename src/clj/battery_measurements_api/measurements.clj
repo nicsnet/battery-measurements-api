@@ -5,16 +5,6 @@
             [taoensso.timbre :as timbre]
             [battery-measurements-api.db.core :as db]))
 
-(defn create-measurement [measurement]
-  (conman/with-transaction [db/*db*]
-    (db/create-measurement! {:serial 111
-                             :timestamp (java.util.Date.)
-                             :discharge (:Pac_total_W measurement)
-                             :charge (:Pac_total_W measurement)
-                             :consumption (:Consumption_W measurement)
-                             :production (:Production_W measurement)
-                             :state_of_charge (:USOC measurement)})))
-
 (def db-columns
   {:discharge :m01
    :charge :m02
@@ -22,6 +12,12 @@
    :production :m04
    :state_of_charge :m05})
 
+(defn assign-charge-and-discharge [measurement]
+  "Assigns the values for charge and discharge for a given measurement"
+  (let [{charge :charge
+         discharge :discharge} measurement]
+    (assoc measurement :discharge (if (pos-int? discharge) discharge 0)
+           :charge (if (neg-int? charge) (* -1 charge) 0))))
 
 (defn convert-measurements [input-json]
   (->> input-json
@@ -32,8 +28,7 @@
                     :serial  (rand-int 10000)
                     :discharge (:Pac_total_W x)
                     :charge (:Pac_total_W x)} ))
-       (map (fn [m] (assoc m :discharge (if (pos-int? (:discharge m)) (:discharge m) 0))))
-       (map (fn [m] (assoc m :charge (if (neg-int? (:charge m)) (* -1 (:charge m))  0))))
+       (map (fn [m] (assign-charge-and-discharge m)))
        (map #(rename-keys % db-columns))))
 
 (defn create-measurements [m]
