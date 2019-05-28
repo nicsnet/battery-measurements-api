@@ -12,6 +12,7 @@
    [battery-measurements-api.middleware.formats :as formats]
    [battery-measurements-api.middleware.exception :as exception]
    [battery-measurements-api.accounts :as a]
+   [battery-measurements-api.cellpack-data :as c]
    [battery-measurements-api.measurements :as m]))
 
 (def settings
@@ -62,15 +63,16 @@
 (def operating-data {:settings settings
                      :rows rows})
 
-(defn create-measurements! [rows serial]
+(defn process-data! [rows serial]
   (if-let [account-serial (a/find-or-create-account! serial)]
     (do (m/create-measurements! rows account-serial)
+        (c/create-cellpack-data! rows account-serial)
         {:status 200 :body {:my-int rows}})
     (not-found)))
 
 (defn operating-data-handler [{{path :path {:keys [settings rows]} :body} :parameters}]
   (let [serial (:unit-serial path)]
-    (create-measurements! rows serial)))
+    (process-data! rows serial)))
 
 (defn service-routes []
   ["/havel"

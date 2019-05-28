@@ -41,7 +41,7 @@
 (defn create-measurements! [data serial]
   (let [measurements (convert-measurements data serial)]
     (conman/with-transaction [db/*db*]
-      (timbre/info "Inserting into the measurements table" measurements)
+      (timbre/info "Inserting into the measurements table for serial" serial)
       (->> measurements
            (map #(vec (map % [:serial :timestamp :m01 :m02 :m03 :m04 :m05])))
            vec
