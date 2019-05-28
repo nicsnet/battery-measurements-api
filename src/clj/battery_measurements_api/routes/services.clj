@@ -62,16 +62,15 @@
 (def operating-data {:settings settings
                      :rows rows})
 
-(defn create-measurements! [measurements serial]
+(defn create-measurements! [rows serial]
   (if-let [account-serial (a/find-or-create-account! serial)]
-    (do (m/create-measurements! measurements account-serial)
-        {:status 200 :body {:my-int measurements}})
+    (do (m/create-measurements! rows account-serial)
+        {:status 200 :body {:my-int rows}})
     (not-found)))
 
 (defn operating-data-handler [{{path :path {:keys [settings rows]} :body} :parameters}]
-  (let [measurements (map :measurements rows)
-        serial (:unit-serial path)]
-    (create-measurements! measurements serial)))
+  (let [serial (:unit-serial path)]
+    (create-measurements! rows serial)))
 
 (defn service-routes []
   ["/havel"

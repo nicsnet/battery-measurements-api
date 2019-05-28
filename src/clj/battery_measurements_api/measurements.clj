@@ -1,8 +1,14 @@
 (ns battery-measurements-api.measurements
   (:require [clojure.set :refer [rename-keys]]
             [conman.core :as conman]
+            [java-time :as time]
             [taoensso.timbre :as timbre]
             [battery-measurements-api.db.core :as db]))
+
+(def timestamp-format "yyyy-MM-dd HH:mm:ss")
+
+(defn str->timestamp [t]
+  (time/local-date-time timestamp-format t))
 
 (def db-columns
   {:discharge :m01
@@ -18,24 +24,25 @@
     (assoc measurement :discharge (if (pos-int? discharge) discharge 0)
            :charge (if (neg-int? charge) (* -1 charge) 0))))
 
-(defn convert-measurements [data serial]
-  (->> data
+(defn convert-measurements [rows serial]
+  (let [measurements (map :measurements rows)
+        timestamp (first (map :timestamp rows))]
+  (->> measurements
        (map (fn [x] {:consumption (:Consumption_W x)
                     :production (:Production_W x)
                     :state_of_charge (:USOC x)
-                    :timestamp (java.util.Date.)
                     :serial serial
+                    :timestamp (str->timestamp timestamp)
                     :discharge (:Pac_total_W x)
                     :charge (:Pac_total_W x)} ))
        (map (fn [m] (assign-charge-and-discharge m)))
-       (map #(rename-keys % db-columns))))
+       (map #(rename-keys % db-columns)))))
 
-(defn create-measurements! [m s]
-  (let [measurements (convert-measurements m s)]
-    (println measurements)
-  (conman/with-transaction [db/*db*]
-    (timbre/info "Inserting into the measurements table")
-    (->> measurements
-         (map #(vec (map % [:serial :timestamp :m01 :m02 :m03 :m04 :m05])))
-         vec
-         (#(db/create-measurements! {:measurements %}))))))
+(defn create-measurements! [data serial]
+  (let [measurements (convert-measurements data serial)]
+    (conman/with-transaction [db/*db*]
+      (timbre/info "Inserting into the measurements table" measurements)
+      (->> measurements
+           (map #(vec (map % [:serial :timestamp :m01 :m02 :m03 :m04 :m05])))
+           vec
+           (#(db/create-measurements! {:measurements %}))))))
