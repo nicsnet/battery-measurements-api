@@ -39,7 +39,6 @@
               :SOC (:state_of_charge measurement)
               :M30 (:state_of_charge measurement)})))
 
-
 (defn convert-machine-statuses [settings serial]
   (->>(machine-status-attributes settings serial)
       vec
@@ -59,5 +58,3 @@
            (map #(vec (map % [:serial :key :value :version :created_at :updated_at])))
            vec
             (#(db/create-machine-statuses! {:machine_status %}))))))
-
-(create-machine-statuses! settings 1234)
