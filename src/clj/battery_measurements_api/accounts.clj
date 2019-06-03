@@ -6,7 +6,7 @@
 (defn find-or-create-account! [serial]
   "Tries first to find an account and if not creates one and returns the serial"
   (if-let [account (db/get-account {:serial serial})]
-    serial
+    account
     (if-let [machine_setting (db/get-machine-setting {:serial serial})]
       (do
         (conman/with-transaction [db/*db*]
@@ -14,4 +14,4 @@
           (db/create-account! {:id serial
                                :serial serial
                                :spree_version 1}))
-        serial))))
+          (db/get-account {:serial serial})))))

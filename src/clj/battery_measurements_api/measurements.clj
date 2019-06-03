@@ -7,6 +7,8 @@
 
 (def timestamp-format "yyyy-MM-dd HH:mm:ss")
 
+(+ 1 1)
+
 (defn str->timestamp [t]
   (time/local-date-time timestamp-format t))
 

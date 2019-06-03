@@ -13,11 +13,12 @@
    [battery-measurements-api.middleware.exception :as exception]
    [battery-measurements-api.accounts :as a]
    [battery-measurements-api.cellpack-data :as c]
-   [battery-measurements-api.measurements :as m]))
+   [battery-measurements-api.measurements :as m]
+   [battery-measurements-api.settings :as s]))
 
 (def settings
-  {:inverter_power_kw any?
-   :pvsize_kw any?
+  {:inverter_power_kw double?
+   :pvsize_kw double?
    :marketing_module_capacity int?
    :maxfeedin_percent int?
    :capacity_kw int?
@@ -63,16 +64,18 @@
 (def operating-data {:settings settings
                      :rows rows})
 
-(defn process-data! [rows serial]
-  (if-let [account-serial (a/find-or-create-account! serial)]
+(defn process-data! [settings rows serial]
+  (if-let [account-serial (:serial (a/find-or-create-account! serial))]
     (do (m/create-measurements! rows account-serial)
         (c/create-cellpack-data! rows account-serial)
+        (s/create-machine-statuses! settings account-serial)
+        (s/update-account! settings account-serial)
         {:status 200 :body {:my-int rows}})
     (not-found)))
 
 (defn operating-data-handler [{{path :path {:keys [settings rows]} :body} :parameters}]
   (let [serial (:unit-serial path)]
-    (process-data! rows serial)))
+    (process-data! settings rows serial)))
 
 (defn service-routes []
   ["/havel"
