@@ -1,20 +1,19 @@
 (ns battery-measurements-api.routes.services
-  (:require
-   [reitit.swagger :as swagger]
-   [reitit.swagger-ui :as swagger-ui]
-   [reitit.ring.coercion :as coercion]
-   [reitit.coercion.spec :as spec-coercion]
-   [reitit.ring.middleware.muuntaja :as muuntaja]
-   [reitit.ring.middleware.multipart :as multipart]
-   [reitit.ring.middleware.parameters :as parameters]
-   [ring.util.http-response :refer :all]
-   [taoensso.timbre :as timbre]
-   [battery-measurements-api.middleware.formats :as formats]
-   [battery-measurements-api.middleware.exception :as exception]
-   [battery-measurements-api.accounts :as a]
-   [battery-measurements-api.cellpack-data :as c]
-   [battery-measurements-api.measurements :as m]
-   [battery-measurements-api.settings :as s]))
+  (:require [reitit.swagger :as swagger]
+            [reitit.swagger-ui :as swagger-ui]
+            [reitit.ring.coercion :as coercion]
+            [reitit.coercion.spec :as spec-coercion]
+            [reitit.ring.middleware.muuntaja :as muuntaja]
+            [reitit.ring.middleware.multipart :as multipart]
+            [reitit.ring.middleware.parameters :as parameters]
+            [ring.util.http-response :refer :all]
+            [taoensso.timbre :as timbre]
+            [battery-measurements-api.middleware.formats :as formats]
+            [battery-measurements-api.middleware.exception :as exception]
+            [battery-measurements-api.accounts :as a]
+            [battery-measurements-api.cellpack-data :as c]
+            [battery-measurements-api.measurements :as m]
+            [battery-measurements-api.settings :as s]))
 
 (def settings
   {:inverter_power_kw double?

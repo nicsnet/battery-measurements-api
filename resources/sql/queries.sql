@@ -3,6 +3,20 @@
 insert into measurements (serial, timestamp, m01, m02, m03, m04, m05)
   values :t*:measurements
 
+-- :name first-measurement :? :1
+-- :doc select the first measurement for an account given the serial
+select m01 as discharge,
+       m02 as charge,
+       m03 as consumption,
+       m04 as production,
+       m05 as state_of_charge,
+       timestamp as measured_at
+  from measurements join accounts
+ where measurements.serial = accounts.serial
+   and measurements.serial = :serial
+ order by timestamp desc limit 1
+
+
 -- :name get-account :? :1
 -- :doc retrieve an account given the serial number
 select * from accounts
@@ -76,16 +90,3 @@ insert into cellpack_data
             soh,
             cycle_count)
 values :t*:cellpack_data
-
--- :name first-measurement :? :1
--- :doc select the first measurement for an account given the serial
-select m01 as discharge,
-       m02 as charge,
-       m03 as consumption,
-       m04 as production,
-       m05 as state_of_charge,
-       timestamp as measured_at
-  from measurements join accounts
-  where measurements.serial = accounts.serial
-    and measurements.serial = :serial
-    order by timestamp desc limit 1
