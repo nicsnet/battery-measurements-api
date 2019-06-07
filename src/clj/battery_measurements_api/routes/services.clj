@@ -16,11 +16,11 @@
             [battery-measurements-api.settings :as s]))
 
 (def settings
-  {:inverter_power_kw any?
-   :pvsize_kw any?
+  {:capacity_kw int?
+   :inverter_power_kw any?
    :marketing_module_capacity int?
    :maxfeedin_percent int?
-   :capacity_kw int?
+   :pvsize_kw any?
    :spree_version int?
    :timezone string?
    :TimezoneOffset int?})
@@ -28,15 +28,15 @@
 (def measurements
   {:Consumption_W int?
    :Pac_total_W int?
-   :USOC int?
-   :Production_W int?})
+   :Production_W int?
+   :USOC int?})
 
 (def rows
   [{:bms_sony {:CC int?
                :CCL_mA int?
                :DCL_mA int?
                :FFC_mAh int?
-               :MAXCV_mV int?
+               :MAXCV_mV int? ;; Maximum Module DC Voltage
                :MAXCT_0.1K int?
                :MAXMDCV_mV int?
                :MAXMC_mA int?
