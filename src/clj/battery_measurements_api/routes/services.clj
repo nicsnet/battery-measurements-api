@@ -1,16 +1,83 @@
 (ns battery-measurements-api.routes.services
-  (:require
-    [reitit.swagger :as swagger]
-    [reitit.swagger-ui :as swagger-ui]
-    [reitit.ring.coercion :as coercion]
-    [reitit.coercion.spec :as spec-coercion]
-    [reitit.ring.middleware.muuntaja :as muuntaja]
-    [reitit.ring.middleware.multipart :as multipart]
-    [reitit.ring.middleware.parameters :as parameters]
-    [battery-measurements-api.middleware.formats :as formats]
-    [battery-measurements-api.middleware.exception :as exception]
-    [ring.util.http-response :refer :all]
-    [clojure.java.io :as io]))
+  (:require [reitit.swagger :as swagger]
+            [reitit.swagger-ui :as swagger-ui]
+            [reitit.ring.coercion :as coercion]
+            [reitit.coercion.spec :as spec-coercion]
+            [reitit.ring.middleware.muuntaja :as muuntaja]
+            [reitit.ring.middleware.multipart :as multipart]
+            [reitit.ring.middleware.parameters :as parameters]
+            [ring.util.http-response :refer :all]
+            [taoensso.timbre :as timbre]
+            [battery-measurements-api.middleware.formats :as formats]
+            [battery-measurements-api.middleware.exception :as exception]
+            [battery-measurements-api.accounts :as a]
+            [battery-measurements-api.cellpack-data :as c]
+            [battery-measurements-api.measurements :as m]
+            [battery-measurements-api.settings :as s]))
+
+(def settings
+  {:inverter_power_kw any?
+   :pvsize_kw any?
+   :marketing_module_capacity int?
+   :maxfeedin_percent int?
+   :capacity_kw int?
+   :spree_version int?
+   :timezone string?
+   :TimezoneOffset int?})
+
+(def measurements
+  {:Consumption_W int?
+   :Pac_total_W int?
+   :USOC int?
+   :Production_W int?})
+
+(def rows
+  [{:bms_sony {:CC int?
+               :CCL_mA int?
+               :DCL_mA int?
+               :FFC_mAh int?
+               :MAXCV_mV int?
+               :MAXCT_0.1K int?
+               :MAXMDCV_mV int?
+               :MAXMC_mA int?
+               :MINMDCV_mV int?
+               :MINMC_mA int?
+               :MINCT_0.1K int?
+               :MINCV_mV int?
+               :ModId int?
+               :RC_mAh int?
+               :RSOC_0.1% int?
+               :SA int?
+               :SAC_mA int?
+               :SC_mA int?
+               :SDCV_mV int?
+               :SOH_0.1% int?
+               :SS int?
+               :ST_sec int?
+               :SW int?}
+
+    :id int?
+    :timestamp string?
+    :measurements measurements}])
+
+(def operating-data {:settings settings
+                     :rows rows})
+
+(defn fetch-account [serial]
+  (a/find-or-create-account! serial))
+
+(defn process-data! [settings rows serial]
+  (if-let [account-serial (:serial (fetch-account serial))]
+    (do (m/create-measurements! rows account-serial)
+        (c/create-cellpack-data! rows account-serial)
+        (s/create-machine-statuses! settings account-serial)
+        (s/update-account! settings account-serial)
+        {:status 200 :body {:my-int rows}})
+    (not-found)))
+
+(defn operating-data-handler [{{path :path {:keys [settings rows]} :body} :parameters}]
+  (let [serial (:unit-serial path)]
+    (process-data! settings rows serial)))
 
 (defn service-routes []
   ["/havel"
@@ -47,21 +114,12 @@
              {:url "/havel/swagger.json"
               :config {:validator-url nil}})}]]
 
-   ["/accounts/:account_mac_address"
+   ["/units/:unit-serial"
     {:swagger {:tags ["operating_data"]}}
 
     ["/operating_data"
      {:post {:summary "Create new measurements"
-             :parameters {:body {:x int?, :y int?}}
-             :responses {200 {:body {:total pos-int?}}}
-             :handler (fn [{{{:keys [x y]} :body} :parameters}]
-                        {:status 200
-                         :body {:total (+ x y)}})}}]
-
-    ["/events"
-     {:post {:summary "Create new events"
-             :parameters {:body {:x int?, :y int?}}
-             :responses {200 {:body {:total pos-int?}}}
-             :handler (fn [{{{:keys [x y]} :body} :parameters}]
-                        {:status 200
-                         :body {:total (+ x y)}})}}]]])
+             :parameters {:body operating-data :path {:unit-serial int?}}
+             :responses {200 {:body any?}
+                         404 {:description "Account for serial not found"}}
+             :handler operating-data-handler}}]]])

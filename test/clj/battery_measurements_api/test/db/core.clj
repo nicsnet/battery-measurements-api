@@ -16,22 +16,88 @@
     (migrations/migrate ["migrate"] (select-keys env [:database-url]))
     (f)))
 
-(deftest test-users
+(def account-fields [:serial
+                     :spree_version
+                     :timezone
+                     :online
+                     :production
+                     :charge
+                     :discharge
+                     :consumption
+                     :state_of_charge])
+
+(def cellpack-test-data
+  [[123 (java.time.LocalDateTime/now) 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23]
+   [999 (java.time.LocalDateTime/now) 11 22 33 44 55 66 77 88 99 100 111 122 133 144 155 166 177 188 199 200 210 222 233]])
+
+(deftest test-accounts
+  (let [timestamp (java.time.LocalDateTime/now)
+        update-params {:spree_version 5
+                       :serial 123
+                       :specified_capacity 2
+                       :specified_pv_capacity 4
+                       :inverter_power 3
+                       :timezone "UTC"
+                       :online true
+                       :last_seen_at timestamp
+                       :measured_at timestamp
+                       :production 2
+                       :charge 6
+                       :discharge 7
+                       :consumption 1
+                       :state_of_charge 2}]
+    (jdbc/with-db-transaction [t-conn *db*]
+      (jdbc/db-set-rollback-only! t-conn)
+      (is (= 1 (db/create-account!
+                t-conn
+                {:id 1
+                 :serial 123
+                 :spree_version 2})))
+      (is (= {:id         1
+              :serial 123
+              :spree_version 2}
+             (-> (db/get-account t-conn {:serial 123})
+                 (select-keys [:id :serial :spree_version]))))
+      (is (= 1 (db/update-account! t-conn update-params)))
+      (is (= {:spree_version 5
+              :serial 123
+              :timezone "UTC"
+              :online true
+              :production 2
+              :charge 6
+              :discharge 7
+              :consumption 1
+              :state_of_charge 2}
+             (-> (db/get-account t-conn {:serial 123})
+                 (select-keys account-fields)))))))
+
+(deftest test-measurements
   (jdbc/with-db-transaction [t-conn *db*]
     (jdbc/db-set-rollback-only! t-conn)
-    (is (= 1 (db/create-user!
-               t-conn
-               {:id         "1"
-                :first_name "Sam"
-                :last_name  "Smith"
-                :email      "sam.smith@example.com"
-                :pass       "pass"})))
-    (is (= {:id         "1"
-            :first_name "Sam"
-            :last_name  "Smith"
-            :email      "sam.smith@example.com"
-            :pass       "pass"
-            :admin      nil
-            :last_login nil
-            :is_active  nil}
-           (db/get-user t-conn {:id "1"})))))
+    (db/create-account! t-conn {:id 1 :serial 222 :spree_version 2})
+    (is (= 2 (db/create-measurements!
+              t-conn
+              {:measurements [[111 (java.time.LocalDateTime/now) 1 2 3 4 5]
+                              [222 (java.time.LocalDateTime/now) 11 12 13 14 15]]})))
+    (is (= {:discharge 11
+            :charge 12
+            :consumption 13
+            :production 14
+            :state_of_charge 15}
+           (-> (db/first-measurement t-conn {:serial 222})
+               (select-keys [:discharge :charge :consumption :production :state_of_charge]))))))
+
+(deftest test-machine-statuses
+  (jdbc/with-db-transaction [t-conn *db*]
+    (jdbc/db-set-rollback-only! t-conn)
+    (is (= 2 (db/create-machine-statuses!
+              t-conn
+              {:machine_status [[111 "my-key" "my-value" 0 (java.time.LocalDateTime/now) (java.time.LocalDateTime/now)]
+                                [222 "other-key" "other-value" 2 (java.time.LocalDateTime/now) (java.time.LocalDateTime/now)]]})))))
+
+(deftest test-cellpack-data
+  (jdbc/with-db-transaction [t-conn *db*]
+    (jdbc/db-set-rollback-only! t-conn)
+    (is (= 2 (db/create-cellpack-data!
+              t-conn
+              {:cellpack_data cellpack-test-data})))))

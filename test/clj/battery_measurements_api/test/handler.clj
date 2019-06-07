@@ -1,11 +1,19 @@
 (ns battery-measurements-api.test.handler
   (:require
+    [clojure.data.json :as json]
     [clojure.test :refer :all]
     [ring.mock.request :refer :all]
     [battery-measurements-api.handler :refer :all]
     [battery-measurements-api.middleware.formats :as formats]
+    [battery-measurements-api.routes.services :refer [fetch-account process-data!]]
     [muuntaja.core :as m]
     [mount.core :as mount]))
+
+(def post-sample-file
+  "test/clj/battery_measurements_api/test/spree_post_sample.json")
+
+(def post-sample
+  (json/read-str (slurp post-sample-file) :key-fn keyword))
 
 (defn parse-json [body]
   (m/decode formats/instance "application/json" body))
@@ -18,35 +26,31 @@
     (f)))
 
 (deftest test-app
-  (testing "main route"
-    (let [response (app (request :get "/"))]
+  (testing "swagger documentation route"
+    (let [response (app (request :get "/havel/api-docs/index.html"))]
       (is (= 200 (:status response)))))
 
   (testing "not-found route"
     (let [response (app (request :get "/invalid"))]
       (is (= 404 (:status response)))))
-  (testing "services"
 
+  (testing "services"
     (testing "success"
-      (let [response (app (-> (request :post "/api/math/plus")
-                              (json-body {:x 10, :y 6})))]
-        (is (= 200 (:status response)))
-        (is (= {:total 16} (m/decode-response-body response)))))
+      (with-redefs [fetch-account (fn [_] {:serial 2222})
+                    process-data! (fn [_ _ _] {:status 200 :body {:total 16}})]
+        (let [response (app (-> (request :post "/havel/units/2222/operating_data")
+                                (json-body post-sample)))]
+          (is (= 200 (:status response)))
+          (is (= {:total 16} (m/decode-response-body response))))))
 
     (testing "parameter coercion error"
-      (let [response (app (-> (request :post "/api/math/plus")
-                              (json-body {:x 10, :y "invalid"})))]
-        (is (= 400 (:status response)))))
+      (with-redefs [fetch-account (fn [_] {:serial 2222})
+                    process-data! (fn [_ _ _] {:status 200 :body {:total 16}})]
+        (let [response (app (-> (request :post "/havel/units/2222/operating_data")
+                                (json-body {:x 10, :y "invalid"})))]
+          (is (= 400 (:status response))))))
 
     (testing "response coercion error"
-      (let [response (app (-> (request :post "/api/math/plus")
+      (let [response (app (-> (request :post "/havel/units/2222/operating_data")
                               (json-body {:x -10, :y 6})))]
-        (is (= 500 (:status response)))))
-
-    (testing "content negotiation"
-      (let [response (app (-> (request :post "/api/math/plus")
-                              (body (pr-str {:x 10, :y 6}))
-                              (content-type "application/edn")
-                              (header "accept" "application/transit+json")))]
-        (is (= 200 (:status response)))
-        (is (= {:total 16} (m/decode-response-body response)))))))
+        (is (= 400 (:status response)))))))
