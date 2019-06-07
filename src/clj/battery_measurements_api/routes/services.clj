@@ -16,8 +16,8 @@
             [battery-measurements-api.settings :as s]))
 
 (def settings
-  {:inverter_power_kw double?
-   :pvsize_kw double?
+  {:inverter_power_kw any?
+   :pvsize_kw any?
    :marketing_module_capacity int?
    :maxfeedin_percent int?
    :capacity_kw int?
@@ -63,8 +63,11 @@
 (def operating-data {:settings settings
                      :rows rows})
 
+(defn fetch-account [serial]
+  (a/find-or-create-account! serial))
+
 (defn process-data! [settings rows serial]
-  (if-let [account-serial (:serial (a/find-or-create-account! serial))]
+  (if-let [account-serial (:serial (fetch-account serial))]
     (do (m/create-measurements! rows account-serial)
         (c/create-cellpack-data! rows account-serial)
         (s/create-machine-statuses! settings account-serial)

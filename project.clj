@@ -25,6 +25,7 @@
                  [mysql/mysql-connector-java "5.1.47"]
                  [nrepl "0.6.0"]
                  [org.clojure/clojure "1.10.0"]
+                 [org.clojure/data.json "0.2.6"]
                  [org.clojure/java.jdbc "0.7.9"]
                  [org.clojure/tools.cli "0.4.2"]
                  [org.clojure/tools.logging "0.4.1"]
