@@ -36,9 +36,13 @@
    :soh
    :cycle_count])
 
+(defn merge-timestamps [rows]
+  (->> rows
+       (map #(update-in % [:bms_sony] merge {:timestamp (:timestamp %)}))
+       (map :bms_sony)))
+
 (defn convert-cellpack-data [rows serial]
-  (let [cellpack-data (map :bms_sony rows)
-        timestamp (str->timestamp (first (map :timestamp rows)))]
+  (let [cellpack-data (merge-timestamps rows)]
     (->> cellpack-data
          (map (fn [x] {:charge_current_limit (:CCL_mA x)
                       :cycle_count (:CC x)
@@ -64,7 +68,7 @@
                       :system_status (:SS x)
                       :system_alarm (:SA x)
                       :system_warning (:SW x)
-                      :timestamp timestamp})))))
+                      :timestamp (str->timestamp (:timestamp x))})))))
 
 (defn create-cellpack-data! [data serial]
   (let [cellpack-data (convert-cellpack-data data serial)]

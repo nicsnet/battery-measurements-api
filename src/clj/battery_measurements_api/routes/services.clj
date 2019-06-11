@@ -1,11 +1,12 @@
 (ns battery-measurements-api.routes.services
-  (:require [reitit.swagger :as swagger]
-            [reitit.swagger-ui :as swagger-ui]
+  (:require [reitit.coercion.spec :as spec-coercion]
+            [reitit.dev.pretty :as pretty]
             [reitit.ring.coercion :as coercion]
-            [reitit.coercion.spec :as spec-coercion]
             [reitit.ring.middleware.muuntaja :as muuntaja]
             [reitit.ring.middleware.multipart :as multipart]
             [reitit.ring.middleware.parameters :as parameters]
+            [reitit.swagger :as swagger]
+            [reitit.swagger-ui :as swagger-ui]
             [ring.util.http-response :refer :all]
             [taoensso.timbre :as timbre]
             [battery-measurements-api.middleware.formats :as formats]
@@ -71,7 +72,7 @@
     (do (m/create-measurements! rows account-serial)
         (c/create-cellpack-data! rows account-serial)
         (s/create-machine-statuses! settings account-serial)
-        (s/update-account! settings account-serial)
+        (a/update-account! settings account-serial)
         {:status 200 :body {:my-int rows}})
     (not-found)))
 
@@ -84,6 +85,7 @@
    {:coercion spec-coercion/coercion
     :muuntaja formats/instance
     :swagger {:id ::api}
+    :exception pretty/exception
     :middleware [;; query-params & form-params
                  parameters/parameters-middleware
                  ;; content-negotiation

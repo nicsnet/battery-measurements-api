@@ -3,6 +3,7 @@
             [conman.core :as conman]
             [java-time :as time]
             [taoensso.timbre :as timbre]
+            [battery-measurements-api.accounts :as a]
             [battery-measurements-api.db.core :as db]))
 
 (defn first-measurement [serial]
@@ -21,11 +22,6 @@
                      :online true
                      :serial serial
                      :last_seen_at (time/local-date-time)}) measurement)))
-
-(defn update-account! [settings serial]
-  (conman/with-transaction [db/*db*]
-    (timbre/info "Update account record for serial" serial)
-    (db/update-account! (acccount-attributes settings serial))))
 
 (defn machine-status-attributes [settings serial]
   (let [measurement (first-measurement serial)]
@@ -51,7 +47,6 @@
 
 (defn create-machine-statuses! [data serial]
   (let [machine-statuses (convert-machine-statuses data serial)]
-    (println machine-statuses)
     (conman/with-transaction [db/*db*]
       (timbre/info "Inserting into the machine status table for serial" serial)
       (->> machine-statuses
