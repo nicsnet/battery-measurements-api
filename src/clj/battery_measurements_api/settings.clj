@@ -4,27 +4,11 @@
             [java-time :as time]
             [taoensso.timbre :as timbre]
             [battery-measurements-api.accounts :as a]
+            [battery-measurements-api.measurements :as m]
             [battery-measurements-api.db.core :as db]))
 
-(defn first-measurement [serial]
-  (db/first-measurement {:serial serial}))
-
-(defn account-timezone [serial]
-  (:timezone (db/get-account {:serial serial})))
-
-(defn acccount-attributes [settings serial]
-  (let [measurement (first-measurement serial)]
-    (merge (into {} {:spree_version (:spree_version settings)
-                     :specified_capacity (:capacity_kw settings)
-                     :specified_pv_capacity (:pvsize_kw settings)
-                     :inverter_power (:inverter_power_kw settings)
-                     :timezone (account-timezone serial)
-                     :online true
-                     :serial serial
-                     :last_seen_at (time/local-date-time)}) measurement)))
-
 (defn machine-status-attributes [settings serial]
-  (let [measurement (first-measurement serial)]
+  (let [measurement (m/first-measurement serial)]
     (into {} {:spree_version (:spree_version settings)
               :InstalledPvPower (:pvsize_kw settings)
               :Capacity (:capacity_kw settings)

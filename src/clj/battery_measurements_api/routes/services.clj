@@ -11,7 +11,7 @@
             [taoensso.timbre :as timbre]
             [battery-measurements-api.middleware.formats :as formats]
             [battery-measurements-api.middleware.exception :as exception]
-            [battery-measurements-api.accounts :as a]
+            [battery-measurements-api.accounts :as accounts]
             [battery-measurements-api.cellpack-data :as c]
             [battery-measurements-api.measurements :as m]
             [battery-measurements-api.settings :as s]))
@@ -65,14 +65,14 @@
                      :rows rows})
 
 (defn fetch-account [serial]
-  (a/find-or-create-account! serial))
+  (accounts/find-or-create-account! serial))
 
 (defn process-data! [settings rows serial]
   (if-let [account-serial (:serial (fetch-account serial))]
     (do (m/create-measurements! rows account-serial)
         (c/create-cellpack-data! rows account-serial)
         (s/create-machine-statuses! settings account-serial)
-        (a/update-account! settings account-serial)
+        (accounts/update-account! settings account-serial)
         {:status 200 :body {:my-int rows}})
     (not-found)))
 

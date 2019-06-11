@@ -10,6 +10,9 @@
 (defn str->timestamp [t]
   (time/local-date-time timestamp-format t))
 
+(defn first-measurement [serial]
+  (db/first-measurement {:serial serial}))
+
 (def db-columns
   {:discharge :m01
    :charge :m02
@@ -24,15 +27,19 @@
     (assoc measurement :discharge (if (pos-int? discharge) discharge 0)
            :charge (if (neg-int? charge) (* -1 charge) 0))))
 
+(defn merge-timestamps [rows]
+  (->> rows
+       (map #(update-in % [:measurements] merge {:timestamp (:timestamp %)}))
+       (map :measurements)))
+
 (defn convert-measurements [rows serial]
-  (let [measurements (map :measurements rows)
-        timestamp (first (map :timestamp rows))]
+  (let [measurements (merge-timestamps rows)]
   (->> measurements
        (map (fn [x] {:consumption (:Consumption_W x)
                     :production (:Production_W x)
                     :state_of_charge (:USOC x)
                     :serial serial
-                    :timestamp (str->timestamp timestamp)
+                    :timestamp (str->timestamp (:timestamp x))
                     :discharge (:Pac_total_W x)
                     :charge (:Pac_total_W x)} ))
        (map (fn [m] (assign-charge-and-discharge m)))
