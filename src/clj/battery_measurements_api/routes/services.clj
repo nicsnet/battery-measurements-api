@@ -1,5 +1,6 @@
 (ns battery-measurements-api.routes.services
-  (:require [reitit.coercion.spec :as spec-coercion]
+  (:require [clojure.spec.alpha :as s]
+            [reitit.coercion.spec :as spec-coercion]
             [reitit.dev.pretty :as pretty]
             [reitit.ring.coercion :as coercion]
             [reitit.ring.middleware.muuntaja :as muuntaja]
@@ -12,16 +13,19 @@
             [battery-measurements-api.middleware.formats :as formats]
             [battery-measurements-api.middleware.exception :as exception]
             [battery-measurements-api.accounts :as accounts]
-            [battery-measurements-api.cellpack-data :as c]
-            [battery-measurements-api.measurements :as m]
-            [battery-measurements-api.settings :as s]))
+            [battery-measurements-api.cellpack-data :as cellpack-data]
+            [battery-measurements-api.measurements :as measurements]
+            [battery-measurements-api.settings :as settings]))
+
+(s/def ::code (s/and int? #(<= % 2)))
+(s/def ::import-response (s/tuple int? int?))
 
 (def settings
   {:capacity_kw int?
-   :inverter_power_kw any?
+   :inverter_power_kw int?
    :marketing_module_capacity int?
    :maxfeedin_percent int?
-   :pvsize_kw any?
+   :pvsize_kw double?
    :spree_version int?
    :timezone string?
    :TimezoneOffset int?})
@@ -69,9 +73,9 @@
 
 (defn process-data! [settings rows serial]
   (if-let [account-serial (:serial (fetch-account serial))]
-    (do (m/create-measurements! rows account-serial)
-        (c/create-cellpack-data! rows account-serial)
-        (s/create-machine-statuses! settings account-serial)
+    (do (measurements/create-measurements! rows account-serial)
+        (cellpack-data/create-cellpack-data! rows account-serial)
+        (settings/create-machine-statuses! settings account-serial)
         (accounts/update-account! settings account-serial)
         {:status 200 :body {:my-int rows}})
     (not-found)))
@@ -122,6 +126,6 @@
     ["/operating_data"
      {:post {:summary "Create new measurements"
              :parameters {:body operating-data :path {:unit-serial int?}}
-             :responses {200 {:body any?}
+             :responses {200 {:body ::import-response}
                          404 {:description "Account for serial not found"}}
              :handler operating-data-handler}}]]])

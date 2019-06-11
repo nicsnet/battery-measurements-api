@@ -1,11 +1,30 @@
 (ns battery-measurements-api.settings
-  (:require [clojure.set :refer [rename-keys]]
+  (:require [clojure.spec.alpha :as s]
+            [clojure.set :refer [rename-keys]]
             [conman.core :as conman]
             [java-time :as time]
             [taoensso.timbre :as timbre]
             [battery-measurements-api.accounts :as a]
             [battery-measurements-api.measurements :as m]
             [battery-measurements-api.db.core :as db]))
+
+(s/def ::capacity_kw int?)
+(s/def ::inverter_power_kw double?)
+(s/def ::marketing_module_capacity int?)
+(s/def ::maxfeedin_percent int?)
+(s/def ::pvsize_kw double?)
+(s/def ::spree_version int?)
+(s/def ::timezone string?)
+(s/def ::TimezoneOffset int?)
+
+(s/def ::settings (s/keys :req-un [::capacity_kw
+                                   ::inverter_power_kw
+                                   ::marketing_module_capacity
+                                   ::maxfeedin_percent
+                                   ::pvsize_kw
+                                   ::spree_version
+                                   ::timezone
+                                   ::TimezoneOffset]))
 
 (defn machine-status-attributes [settings serial]
   (let [measurement (m/first-measurement serial)]
