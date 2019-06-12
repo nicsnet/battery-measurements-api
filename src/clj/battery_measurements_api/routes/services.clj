@@ -18,55 +18,20 @@
             [battery-measurements-api.settings :as settings]))
 
 (s/def ::code (s/and int? #(<= % 2)))
-(s/def ::import-response (s/tuple int? int?))
 
-(def settings
-  {:capacity_kw int?
-   :inverter_power_kw int?
-   :marketing_module_capacity int?
-   :maxfeedin_percent int?
-   :pvsize_kw double?
-   :spree_version int?
-   :timezone string?
-   :TimezoneOffset int?})
+(s/def ::ids-with-codes (s/tuple ::id ::code))
+(s/def ::import-response (s/coll-of ::ids-with-codes))
 
-(def measurements
-  {:Consumption_W int?
-   :Pac_total_W int?
-   :Production_W int?
-   :USOC int?})
+(s/def ::id int?)
+(s/def ::timestamp string?)
 
-(def rows
-  [{:bms_sony {:CC int?
-               :CCL_mA int?
-               :DCL_mA int?
-               :FFC_mAh int?
-               :MAXCV_mV int? ;; Maximum Module DC Voltage
-               :MAXCT_0.1K int?
-               :MAXMDCV_mV int?
-               :MAXMC_mA int?
-               :MINMDCV_mV int?
-               :MINMC_mA int?
-               :MINCT_0.1K int?
-               :MINCV_mV int?
-               :ModId int?
-               :RC_mAh int?
-               :RSOC_0.1% int?
-               :SA int?
-               :SAC_mA int?
-               :SC_mA int?
-               :SDCV_mV int?
-               :SOH_0.1% int?
-               :SS int?
-               :ST_sec int?
-               :SW int?}
+(s/def ::cellpack-data (s/keys :req-un [::cellpack-data/bms_sony
+                               ::timestamp
+                               ::id
+                               ::measurements/measurements]))
 
-    :id int?
-    :timestamp string?
-    :measurements measurements}])
-
-(def operating-data {:settings settings
-                     :rows rows})
+(s/def ::rows (s/coll-of ::cellpack-data))
+(s/def ::operating-data (s/keys :req-un [::settings/settings ::rows]))
 
 (defn fetch-account [serial]
   (accounts/find-or-create-account! serial))
@@ -125,7 +90,7 @@
 
     ["/operating_data"
      {:post {:summary "Create new measurements"
-             :parameters {:body operating-data :path {:unit-serial int?}}
+             :parameters {:body ::operating-data :path {:unit-serial int?}}
              :responses {200 {:body ::import-response}
                          404 {:description "Account for serial not found"}}
              :handler operating-data-handler}}]]])

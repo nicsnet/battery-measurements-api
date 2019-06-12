@@ -1,9 +1,20 @@
 (ns battery-measurements-api.measurements
   (:require [clojure.set :refer [rename-keys]]
+            [clojure.spec.alpha :as s]
             [conman.core :as conman]
             [java-time :as time]
             [taoensso.timbre :as timbre]
             [battery-measurements-api.db.core :as db]))
+
+(s/def ::Consumption_W int?)
+(s/def ::Pac_total_W int?)
+(s/def ::Production_W int?)
+(s/def ::USOC int?)
+
+(s/def ::measurements (s/keys :req-un [::Consumption_W
+                                       ::Pac_total_W
+                                       ::Production_W
+                                       ::USOC]))
 
 (def timestamp-format "yyyy-MM-dd HH:mm:ss")
 

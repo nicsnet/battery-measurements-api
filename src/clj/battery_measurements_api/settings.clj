@@ -9,10 +9,11 @@
             [battery-measurements-api.db.core :as db]))
 
 (s/def ::capacity_kw int?)
-(s/def ::inverter_power_kw double?)
+(s/def ::inverter_power_kw (s/or :inverter_power_kw double?
+                                 :inverter_power_kw int?))
 (s/def ::marketing_module_capacity int?)
 (s/def ::maxfeedin_percent int?)
-(s/def ::pvsize_kw double?)
+(s/def ::pvsize_kw (s/or :pvsize_kw double? :pvsize_kw int?))
 (s/def ::spree_version int?)
 (s/def ::timezone string?)
 (s/def ::TimezoneOffset int?)
