@@ -17,13 +17,10 @@
             [battery-measurements-api.measurements :as measurements]
             [battery-measurements-api.settings :as settings]))
 
-(s/def ::code (s/and int? #(<= % 2)))
-(s/def ::ids-with-codes (s/tuple ::id ::code))
-(s/def ::import-response (s/coll-of ::ids-with-codes))
 
+(s/def ::import-response (s/keys))
 (s/def ::id int?)
 (s/def ::timestamp string?)
-
 (s/def ::cellpack-data (s/keys :req-un [::cellpack-data/bms_sony
                                ::timestamp
                                ::id
@@ -102,6 +99,6 @@
     ["/operating_data"
      {:post {:summary "Create new measurements"
              :parameters {:body ::operating-data :path {:unit-serial int?}}
-             :responses {200 {:body any?}
+             :responses {200 {:body ::import-response}
                          404 {:description "Account for serial not found"}}
              :handler operating-data-handler}}]]])
