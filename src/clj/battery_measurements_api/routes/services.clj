@@ -18,7 +18,6 @@
             [battery-measurements-api.settings :as settings]))
 
 (s/def ::code (s/and int? #(<= % 2)))
-
 (s/def ::ids-with-codes (s/tuple ::id ::code))
 (s/def ::import-response (s/coll-of ::ids-with-codes))
 
@@ -36,13 +35,25 @@
 (defn fetch-account [serial]
   (accounts/find-or-create-account! serial))
 
+(def response-code-mapping {:failure 0 :success 2})
+
+(defn response-codes [rows type]
+  "Returns a map with ids as keys and values for success or failure codes"
+  (let [code (type response-code-mapping)
+        ids (remove #(nil? %) (map :id rows))]
+    (zipmap ids (repeat code))))
+
 (defn process-data! [settings rows serial]
   (if-let [account-serial (:serial (fetch-account serial))]
-    (do (measurements/create-measurements! rows account-serial)
-        (cellpack-data/create-cellpack-data! rows account-serial)
-        (settings/create-machine-statuses! settings account-serial)
-        (accounts/update-account! settings account-serial)
-        {:status 200 :body {:my-int rows}})
+    (try
+      (do (measurements/create-measurements! rows account-serial)
+          (cellpack-data/create-cellpack-data! rows account-serial)
+          (settings/create-machine-statuses! settings account-serial)
+          (accounts/update-account! settings account-serial)
+          (ok (response-codes rows :success)))
+      (catch Exception e
+        (timbre/log :error e)
+        (bad-request (response-codes rows :failure))))
     (not-found)))
 
 (defn operating-data-handler [{{path :path {:keys [settings rows]} :body} :parameters}]
@@ -91,6 +102,6 @@
     ["/operating_data"
      {:post {:summary "Create new measurements"
              :parameters {:body ::operating-data :path {:unit-serial int?}}
-             :responses {200 {:body ::import-response}
+             :responses {200 {:body any?}
                          404 {:description "Account for serial not found"}}
              :handler operating-data-handler}}]]])
