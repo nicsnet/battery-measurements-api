@@ -1,0 +1,23 @@
+stages:
+  - test
+
+image: clojure:lein-2.7.0
+
+services:
+  - mysql:5.7
+
+variables:
+  DATABASE_URL: "mysql://mysql/sonnen-db?user=sonnen&password=sonnen&useSSL=false"
+  MYSQL_ROOT_PASSWORD: secret
+  MYSQL_DATABASE: sonnen-db
+  MYSQL_USER: sonnen
+  MYSQL_PASSWORD: sonnen
+
+before_script:
+  - lein deps
+
+test:
+  stage: test
+  script:
+  - lein run migrate
+  - bin/kaocha --plugin cloverage 
