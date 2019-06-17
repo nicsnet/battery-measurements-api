@@ -47,6 +47,8 @@
 
   :plugins []
 
+  :aliases {"kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]}
+
   :profiles
   {:uberjar {:omit-source true
              :aot :all
@@ -56,6 +58,8 @@
 
    :dev           [:project/dev :profiles/dev]
    :test          [:project/dev :project/test :profiles/test]
+   :kaocha {:dependencies [[lambdaisland/kaocha "0.0-418"]
+                           [lambdaisland/kaocha-cloverage "0.0-32"]]}
 
    :project/dev  {:jvm-opts ["-Dconf=dev-config.edn"]
                   :dependencies [[expound "0.7.2"]

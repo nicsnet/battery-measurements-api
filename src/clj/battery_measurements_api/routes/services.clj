@@ -17,7 +17,6 @@
             [battery-measurements-api.measurements :as measurements]
             [battery-measurements-api.settings :as settings]))
 
-
 (s/def ::import-response (s/keys))
 (s/def ::id int?)
 (s/def ::timestamp string?)

@@ -4,7 +4,7 @@
 # Cloudius S3 repository.
 #
 #base: cloudius/osv
-base: cloudius/osv-openjdk8
+base: cloudius/osv-openjdk
 
 #
 # The command line passed to OSv to start up the application.
@@ -17,6 +17,7 @@ cmdline: /java.so -jar /battery-measurements-api/app.jar
 #
 # For Leiningen, you can use:
 #build: lein uberjar
+build: lein uberjar
 # For Boot, you can use:
 #build: boot build
 
