@@ -1,6 +1,6 @@
 -- :name create-measurements! :! :n
 -- :doc creates a number of new measurement records
-insert into measurements (serial, timestamp, m01, m02, m03, m04, m05)
+insert ignore into measurements (serial, timestamp, m01, m02, m03, m04, m05)
   values :t*:measurements
 
 -- :name first-measurement :? :1
@@ -49,12 +49,18 @@ where serial = :serial
 -- :name get-machine-setting :? :1
 -- :doc retrieve a machine setting given the serial number
 select * from machine_settings
-  where serial = :serial
+ where serial = :serial
+
+-- :name create-machine-setting! :! :n
+-- :doc creates a new machine setting record
+insert into machine_settings (serial, `key`, `value`, version, created_at, updated_at)
+  value (:serial, :key, :value, :version, current_time, current_time)
 
 -- :name create-machine-statuses! :! :n
 -- :doc creates a number of new machine status records
 insert into machine_status (serial, `key`, `value`, version, created_at, updated_at)
   values :t*:machine_status
+  on duplicate key update updated_at = current_time()
 
 -- :name create-machine-status! :! :n
 -- :doc creates a new machine status record
@@ -63,30 +69,30 @@ insert into machine_status (serial, `key`, `value`, version, created_at, updated
 
 -- :name create-cellpack-data! :! :n
 -- :doc creates a number of new cellpack data records
-insert into cellpack_data
-            (serial,
-            timestamp,
-            module_id,
-            system_time,
-            system_status,
-            system_alarm,
-            system_warning,
-            charge_current_limit,
-            discharge_current_limit,
-            system_current,
-            system_avg_current,
-            max_module_current,
-            min_module_current,
-            system_dc_voltage,
-            max_module_dc_voltage,
-            min_module_dc_voltage,
-            max_cell_voltage,
-            min_cell_voltage,
-            max_cell_temp,
-            min_cell_temp,
-            rsoc,
-            remaining_capacity,
-            full_charge_capacity,
-            soh,
-            cycle_count)
+insert ignore into cellpack_data
+  (serial,
+   timestamp,
+   module_id,
+   system_time,
+   system_status,
+   system_alarm,
+   system_warning,
+   charge_current_limit,
+   discharge_current_limit,
+   system_current,
+   system_avg_current,
+   max_module_current,
+   min_module_current,
+   system_dc_voltage,
+   max_module_dc_voltage,
+   min_module_dc_voltage,
+   max_cell_voltage,
+   min_cell_voltage,
+   max_cell_temp,
+   min_cell_temp,
+   rsoc,
+   remaining_capacity,
+   full_charge_capacity,
+   soh,
+   cycle_count)
 values :t*:cellpack_data

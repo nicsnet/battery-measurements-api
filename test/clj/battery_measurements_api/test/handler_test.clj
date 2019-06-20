@@ -1,4 +1,4 @@
-(ns battery-measurements-api.test.handler
+(ns battery-measurements-api.test.handler-test
   (:require
     [clojure.data.json :as json]
     [clojure.test :refer :all]

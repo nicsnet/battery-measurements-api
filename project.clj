@@ -19,12 +19,12 @@
                  [luminus/ring-ttl-session "0.3.2"]
                  [markdown-clj "1.10.0"]
                  [metosin/muuntaja "0.6.4"]
-                 [metosin/reitit "0.3.2"]
+                 [metosin/reitit "0.3.7"]
                  [metosin/ring-http-response "0.9.1"]
                  [mount "0.1.16"]
                  [mysql/mysql-connector-java "5.1.47"]
                  [nrepl "0.6.0"]
-                 [org.clojure/clojure "1.10.0"]
+                 [org.clojure/clojure "1.10.1"]
                  [org.clojure/data.json "0.2.6"]
                  [org.clojure/java.jdbc "0.7.9"]
                  [org.clojure/tools.cli "0.4.2"]
@@ -47,6 +47,8 @@
 
   :plugins []
 
+  :aliases {"kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]}
+
   :profiles
   {:uberjar {:omit-source true
              :aot :all
@@ -56,6 +58,8 @@
 
    :dev           [:project/dev :profiles/dev]
    :test          [:project/dev :project/test :profiles/test]
+   :kaocha {:dependencies [[lambdaisland/kaocha "0.0-418"]
+                           [lambdaisland/kaocha-cloverage "0.0-32"]]}
 
    :project/dev  {:jvm-opts ["-Dconf=dev-config.edn"]
                   :dependencies [[expound "0.7.2"]

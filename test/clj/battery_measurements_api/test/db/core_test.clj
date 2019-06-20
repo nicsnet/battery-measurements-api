@@ -1,4 +1,4 @@
-(ns battery-measurements-api.test.db.core
+(ns battery-measurements-api.test.db.core-test
   (:require
     [battery-measurements-api.db.core :refer [*db*] :as db]
     [luminus-migrations.core :as migrations]

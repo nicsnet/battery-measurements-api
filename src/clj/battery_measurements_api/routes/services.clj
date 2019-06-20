@@ -1,78 +1,55 @@
 (ns battery-measurements-api.routes.services
-  (:require [reitit.swagger :as swagger]
-            [reitit.swagger-ui :as swagger-ui]
-            [reitit.ring.coercion :as coercion]
+  (:require [clojure.spec.alpha :as s]
             [reitit.coercion.spec :as spec-coercion]
+            [reitit.dev.pretty :as pretty]
+            [reitit.ring.coercion :as coercion]
             [reitit.ring.middleware.muuntaja :as muuntaja]
             [reitit.ring.middleware.multipart :as multipart]
             [reitit.ring.middleware.parameters :as parameters]
+            [reitit.swagger :as swagger]
+            [reitit.swagger-ui :as swagger-ui]
             [ring.util.http-response :refer :all]
             [taoensso.timbre :as timbre]
             [battery-measurements-api.middleware.formats :as formats]
             [battery-measurements-api.middleware.exception :as exception]
-            [battery-measurements-api.accounts :as a]
-            [battery-measurements-api.cellpack-data :as c]
-            [battery-measurements-api.measurements :as m]
-            [battery-measurements-api.settings :as s]))
+            [battery-measurements-api.accounts :as accounts]
+            [battery-measurements-api.cellpack-data :as cellpack-data]
+            [battery-measurements-api.measurements :as measurements]
+            [battery-measurements-api.settings :as settings]))
 
-(def settings
-  {:inverter_power_kw any?
-   :pvsize_kw any?
-   :marketing_module_capacity int?
-   :maxfeedin_percent int?
-   :capacity_kw int?
-   :spree_version int?
-   :timezone string?
-   :TimezoneOffset int?})
+(s/def ::import-response (s/keys))
+(s/def ::id int?)
+(s/def ::timestamp string?)
+(s/def ::cellpack-data (s/keys :req-un [::cellpack-data/bms_sony
+                               ::timestamp
+                               ::id
+                               ::measurements/measurements]))
 
-(def measurements
-  {:Consumption_W int?
-   :Pac_total_W int?
-   :USOC int?
-   :Production_W int?})
-
-(def rows
-  [{:bms_sony {:CC int?
-               :CCL_mA int?
-               :DCL_mA int?
-               :FFC_mAh int?
-               :MAXCV_mV int?
-               :MAXCT_0.1K int?
-               :MAXMDCV_mV int?
-               :MAXMC_mA int?
-               :MINMDCV_mV int?
-               :MINMC_mA int?
-               :MINCT_0.1K int?
-               :MINCV_mV int?
-               :ModId int?
-               :RC_mAh int?
-               :RSOC_0.1% int?
-               :SA int?
-               :SAC_mA int?
-               :SC_mA int?
-               :SDCV_mV int?
-               :SOH_0.1% int?
-               :SS int?
-               :ST_sec int?
-               :SW int?}
-
-    :id int?
-    :timestamp string?
-    :measurements measurements}])
-
-(def operating-data {:settings settings
-                     :rows rows})
+(s/def ::rows (s/coll-of ::cellpack-data))
+(s/def ::operating-data (s/keys :req-un [::settings/settings ::rows]))
 
 (defn fetch-account [serial]
-  (a/find-or-create-account! serial))
+  (accounts/find-or-create-account! serial))
+
+(def response-code-mapping {:failure 0 :success 2})
+
+(defn response-codes [rows type]
+  "Returns a map with ids as keys and values for success or failure codes"
+  (let [code (type response-code-mapping)
+        ids (remove #(nil? %) (map :id rows))]
+    (zipmap ids (repeat code))))
 
 (defn process-data! [settings rows serial]
   (if-let [account-serial (:serial (fetch-account serial))]
-    (do (m/create-measurements! rows account-serial)
-        (c/create-cellpack-data! rows account-serial)
-        (s/create-machine-statuses! settings account-serial)
-        (s/update-account! settings account-serial)
-        {:status 200 :body {:my-int rows}})
+    (try
+      (do (measurements/create-measurements! rows account-serial)
+          (cellpack-data/create-cellpack-data! rows account-serial)
+          (settings/create-machine-statuses! settings account-serial)
+          (accounts/update-account! settings account-serial)
+          (ok (response-codes rows :success)))
+      (catch Exception e
+        (timbre/log :error e)
+        (bad-request (response-codes rows :failure))))
     (not-found)))
 
 (defn operating-data-handler [{{path :path {:keys [settings rows]} :body} :parameters}]
@@ -84,6 +61,7 @@
    {:coercion spec-coercion/coercion
     :muuntaja formats/instance
     :swagger {:id ::api}
+    :exception pretty/exception
     :middleware [;; query-params & form-params
                  parameters/parameters-middleware
                  ;; content-negotiation
@@ -119,7 +97,7 @@
 
     ["/operating_data"
      {:post {:summary "Create new measurements"
-             :parameters {:body operating-data :path {:unit-serial int?}}
-             :responses {200 {:body any?}
+             :parameters {:body ::operating-data :path {:unit-serial int?}}
+             :responses {200 {:body ::import-response}
                          404 {:description "Account for serial not found"}}
              :handler operating-data-handler}}]]])

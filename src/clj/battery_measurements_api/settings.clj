@@ -1,34 +1,34 @@
 (ns battery-measurements-api.settings
-  (:require [clojure.set :refer [rename-keys]]
+  (:require [clojure.spec.alpha :as s]
+            [clojure.set :refer [rename-keys]]
             [conman.core :as conman]
             [java-time :as time]
             [taoensso.timbre :as timbre]
+            [battery-measurements-api.accounts :as a]
+            [battery-measurements-api.measurements :as m]
             [battery-measurements-api.db.core :as db]))
 
-(defn first-measurement [serial]
-  (db/first-measurement {:serial serial}))
+(s/def ::capacity_kw int?)
+(s/def ::inverter_power_kw (s/or :inverter_power_kw double?
+                                 :inverter_power_kw int?))
+(s/def ::marketing_module_capacity int?)
+(s/def ::maxfeedin_percent int?)
+(s/def ::pvsize_kw (s/or :pvsize_kw double? :pvsize_kw int?))
+(s/def ::spree_version int?)
+(s/def ::timezone string?)
+(s/def ::TimezoneOffset int?)
 
-(defn account-timezone [serial]
-  (:timezone (db/get-account {:serial serial})))
-
-(defn acccount-attributes [settings serial]
-  (let [measurement (first-measurement serial)]
-    (merge (into {} {:spree_version (:spree_version settings)
-                     :specified_capacity (:capacity_kw settings)
-                     :specified_pv_capacity (:pvsize_kw settings)
-                     :inverter_power (:inverter_power_kw settings)
-                     :timezone (account-timezone serial)
-                     :online true
-                     :serial serial
-                     :last_seen_at (time/local-date-time)}) measurement)))
-
-(defn update-account! [settings serial]
-  (conman/with-transaction [db/*db*]
-    (timbre/info "Update account record for serial" serial)
-    (db/update-account! (acccount-attributes settings serial))))
+(s/def ::settings (s/keys :req-un [::capacity_kw
+                                   ::inverter_power_kw
+                                   ::marketing_module_capacity
+                                   ::maxfeedin_percent
+                                   ::pvsize_kw
+                                   ::spree_version
+                                   ::timezone
+                                   ::TimezoneOffset]))
 
 (defn machine-status-attributes [settings serial]
-  (let [measurement (first-measurement serial)]
+  (let [measurement (m/first-measurement serial)]
     (into {} {:spree_version (:spree_version settings)
               :InstalledPvPower (:pvsize_kw settings)
               :Capacity (:capacity_kw settings)
@@ -51,7 +51,6 @@
 
 (defn create-machine-statuses! [data serial]
   (let [machine-statuses (convert-machine-statuses data serial)]
-    (println machine-statuses)
     (conman/with-transaction [db/*db*]
       (timbre/info "Inserting into the machine status table for serial" serial)
       (->> machine-statuses

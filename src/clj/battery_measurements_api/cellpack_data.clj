@@ -1,8 +1,57 @@
 (ns battery-measurements-api.cellpack-data
-  (:require [conman.core :as conman]
+  (:require [clojure.spec.alpha :as s]
+            [conman.core :as conman]
             [java-time :as time]
             [taoensso.timbre :as timbre]
             [battery-measurements-api.db.core :as db]))
+
+(s/def ::CC int?)
+(s/def ::CCL_mA int?)
+(s/def ::DCL_mA int?)
+(s/def ::FFC_mAh int?)
+(s/def ::MAXCV_mV int?) ;; Maximum Module DC Voltage
+(s/def ::MAXCT_0.1K int?)
+(s/def ::MAXMDCV_mV int?)
+(s/def ::MAXMC_mA int?)
+(s/def ::MINMDCV_mV int?)
+(s/def ::MINMC_mA int?)
+(s/def ::MINCT_0.1K int?)
+(s/def ::MINCV_mV int?)
+(s/def ::ModId int?)
+(s/def ::RC_mAh int?)
+(s/def ::RSOC_0.1% int?)
+(s/def ::SA int?)
+(s/def ::SAC_mA int?)
+(s/def ::SC_mA int?)
+(s/def ::SDCV_mV int?)
+(s/def ::SOH_0.1% int?)
+(s/def ::SS int?)
+(s/def ::ST_sec int?)
+(s/def ::SW int?)
+
+(s/def ::bms_sony (s/keys :req-un [::CC
+                                  ::CCL_mA
+                                  ::DCL_mA
+                                  ::FFC_mAh
+                                  ::MAXCV_mV
+                                  ::MAXCT_0.1K
+                                  ::MAXMDCV_mV
+                                  ::MAXMC_mA
+                                  ::MINMDCV_mV
+                                  ::MINMC_mA
+                                  ::MINCT_0.1K
+                                  ::MINCV_mV
+                                  ::ModId
+                                  ::RC_mAh
+                                  ::RSOC_0.1%
+                                  ::SA
+                                  ::SAC_mA
+                                  ::SC_mA
+                                  ::SDCV_mV
+                                  ::SOH_0.1%
+                                  ::SS
+                                  ::ST_sec
+                                  ::SW]))
 
 (def timestamp-format "yyyy-MM-dd HH:mm:ss")
 
@@ -36,9 +85,13 @@
    :soh
    :cycle_count])
 
+(defn merge-timestamps [rows]
+  (->> rows
+       (map #(update-in % [:bms_sony] merge {:timestamp (:timestamp %)}))
+       (map :bms_sony)))
+
 (defn convert-cellpack-data [rows serial]
-  (let [cellpack-data (map :bms_sony rows)
-        timestamp (str->timestamp (first (map :timestamp rows)))]
+  (let [cellpack-data (merge-timestamps rows)]
     (->> cellpack-data
          (map (fn [x] {:charge_current_limit (:CCL_mA x)
                       :cycle_count (:CC x)
@@ -64,7 +117,7 @@
                       :system_status (:SS x)
                       :system_alarm (:SA x)
                       :system_warning (:SW x)
-                      :timestamp timestamp})))))
+                      :timestamp (str->timestamp (:timestamp x))})))))
 
 (defn create-cellpack-data! [data serial]
   (let [cellpack-data (convert-cellpack-data data serial)]
