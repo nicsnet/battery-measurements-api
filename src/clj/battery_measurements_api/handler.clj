@@ -9,6 +9,9 @@
     [battery-measurements-api.env :refer [defaults]]
     [mount.core :as mount]))
 
+(defn health-check [_]
+  {:status 200, :body "ok"})
+
 (mount/defstate init-app
   :start ((or (:init defaults) (fn [])))
   :stop  ((or (:stop defaults) (fn []))))
@@ -18,7 +21,8 @@
   (middleware/wrap-base
     (ring/ring-handler
       (ring/router
-        [["/" {:get
+       [["/health" {:get health-check}]
+        ["/" {:get
                {:handler (constantly {:status 301 :headers {"Location" "/havel/api-docs/index.html"}})}}]
          (service-routes)])
       (ring/routes
