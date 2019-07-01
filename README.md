@@ -4,9 +4,6 @@
 The battery measurements api is a service extracted out of the Core api. It is written in Clojure using the [Luminus web framework](http://luminusweb.net/)
 
 
-
-
-
 ## Prerequisites
 
 You will need [Leiningen](https://github.com/technomancy/leiningen) 2.0 or above installed, as well as [Docker](https://www.docker.com/get-docker)
@@ -34,6 +31,8 @@ For normal development:
 
 ## Database
 
-For technical reasons the **Sonnen-DB**  is still running on a `MySQL 5.x` version on production. This is why we don't use the latest version of `mysql-connector-java`.
-
 Run `docker-compose up db` to start the MySQL DB in the docker container.
+
+## Run tests
+
+From the command line run `bin/kaocha --plugin cloverage` this will run the test runner and output coverage information.
