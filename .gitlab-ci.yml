@@ -18,8 +18,6 @@ before_script:
 
 test:
   stage: test
-  tags:
-  - docker
   script:
   - lein run migrate
   - bin/kaocha --plugin cloverage 
