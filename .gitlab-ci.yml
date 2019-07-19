@@ -47,7 +47,6 @@ build:uberjar:
     paths:
       - battery-measurements-api.jar
   only:
-    - setup-continious-deployment-with-nomad
     - develop
     - master
 
@@ -97,7 +96,6 @@ production:upload-s3:
   script:
     - aws s3 cp battery-measurements-api.jar s3://${S3_BUCKET_NAME}/${CI_COMMIT_SHORT_SHA}/
   only:
-    - setup-continious-deployment-with-nomad
     - master
 
 production:nomad-deploy:
@@ -106,11 +104,11 @@ production:nomad-deploy:
   cache: {}
   environment:
     name: production
+    url: http://116.203.80.78:8081
   variables:
     GIT_STRATEGY: fetch
   script: bin/nomad-deploy.sh 
   only:
-    - setup-continious-deployment-with-nomad
     - master
 
 
