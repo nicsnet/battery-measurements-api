@@ -1,23 +1,116 @@
 stages:
   - test
+  - build
+  - upload
+  - deploy
 
-image: clojure:lein-2.7.0
+image: clojure:lein-2.8.1-alpine
 
-services:
-  - mysql:5.7
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+  - /root/.m2
+  - /root/.lein
 
 variables:
-  DATABASE_URL: "mysql://mysql/sonnen-db?user=sonnen&password=sonnen&useSSL=false"
+  BUILD_IMAGE: clojure:lein-2.8.1-alpine
+  GIT_STRATEGY: none
+  DATABASE_URL: "mysql://mysql/sonnen-db?user=sonnen&password=sonnen&allowPublicKeyRetrieval=true&useSSL=false"
   MYSQL_ROOT_PASSWORD: secret
   MYSQL_DATABASE: sonnen-db
   MYSQL_USER: sonnen
-  MYSQL_PASSWORD: sonnen
-
-before_script:
-  - lein deps
+  MYSQL_PASSWORD: sonnen 
 
 test:
   stage: test
+  image: $BUILD_IMAGE
+  variables:
+    GIT_STRATEGY: fetch
+  before_script:
+    - lein deps
   script:
   - lein run migrate
   - bin/kaocha --plugin cloverage 
+  services:
+    - mysql:5.7
+
+build:uberjar:
+  stage: build
+  image: $BUILD_IMAGE
+  variables:
+    GIT_STRATEGY: fetch
+  script:
+    - lein uberjar
+    - mv target/uberjar/battery-measurements-api.jar $CI_PROJECT_DIR
+  artifacts:
+    name: "battery-measurements-api-${CI_BUILD_REF_NAME}-${CI_BUILD_ID}"
+    paths:
+      - battery-measurements-api.jar
+  only:
+    - develop
+    - master
+
+staging:upload-s3:
+  stage: upload
+  image: $CI_REGISTRY/digital-dev/docker/awscli:latest
+  dependencies:
+    - build:uberjar
+  variables:
+    AWS_ACCESS_KEY_ID: $AWS_STAGING_KEY_ID
+    AWS_SECRET_ACCESS_KEY: $AWS_STAGING_SECRET
+    S3_BUCKET_NAME: battery-measurements-api-deployments-staging
+  cache: {}
+  environment:
+    name: staging
+    url: http://116.203.80.78:8080
+  script:
+    - aws s3 cp battery-measurements-api.jar s3://${S3_BUCKET_NAME}/${CI_COMMIT_SHORT_SHA}/
+  only:
+    - develop
+
+staging:nomad-deploy:
+  stage: deploy
+  image: $CI_REGISTRY/digital-dev/docker/deploy:latest
+  cache: {}
+  environment:
+    name: staging
+  variables:
+    GIT_STRATEGY: fetch
+  script: bin/nomad-deploy.sh 
+  only:
+    - develop
+
+production:upload-s3:
+  stage: upload
+  image: $CI_REGISTRY/digital-dev/docker/awscli:latest
+  dependencies:
+    - build:uberjar
+  variables:
+    AWS_ACCESS_KEY_ID: $AWS_PRODUCTION_KEY_ID
+    AWS_SECRET_ACCESS_KEY: $AWS_PRODUCTION_SECRET
+    S3_BUCKET_NAME: battery-measurements-api-deployments-production
+  cache: {}
+  environment:
+    name: production
+    url: http://116.203.80.78:8081
+  script:
+    - aws s3 cp battery-measurements-api.jar s3://${S3_BUCKET_NAME}/${CI_COMMIT_SHORT_SHA}/
+  only:
+    - master
+
+production:nomad-deploy:
+  stage: deploy
+  image: $CI_REGISTRY/digital-dev/docker/deploy:latest
+  cache: {}
+  environment:
+    name: production
+    url: http://116.203.80.78:8081
+  variables:
+    GIT_STRATEGY: fetch
+  script: bin/nomad-deploy.sh 
+  only:
+    - master
+
+
+
+
