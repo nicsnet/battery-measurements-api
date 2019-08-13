@@ -28,7 +28,8 @@ update accounts
  where serial = :serial
 
 -- :name online :? :1
--- :doc count the number of currently online eaton batteries
+-- :doc count the number of currently online batteries
+-- You can pass {:spree true} to check for spree batteries and {:spree false} for eatons
 select count(*) as total from accounts
  where
    /*~ (if (:spree params) */
@@ -42,7 +43,8 @@ select count(*) as total from accounts
    and serial not in (:snip:exclude-devices)
 
 -- :name offline :? :1
--- :doc count the number of currently online eaton batteries
+-- :doc count the number of currently offline batteries
+-- You can pass {:spree true} to check for spree batteries and {:spree false} for eatons
 select count(*) as total from accounts
  where
    /*~ (if (:spree params) */
@@ -71,11 +73,3 @@ and wan_ip not in ('178.19.214.131',
                    '75.52.246.30',
                    '96.89.71.241',
                    '96.89.71.243')
-
--- :snip eaton
-and hw_version < 8
-
--- :snip spree
-and (spree_version > 0 or hw_version >= 8)
-
-
