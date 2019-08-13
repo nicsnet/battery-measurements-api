@@ -12,47 +12,48 @@
 
 (alter-var-root #'s/*explain-out* (constantly expound/printer))
 
-(defn start 
+(defn start
   "Starts application.
   You'll usually want to run this on startup."
   []
   (mount/start-without #'battery-measurements-api.core/repl-server))
 
-(defn stop 
+(defn stop
   "Stops application."
   []
   (mount/stop-except #'battery-measurements-api.core/repl-server))
 
-(defn restart 
+(defn restart
   "Restarts application."
   []
   (stop)
   (start))
 
-(defn restart-db 
+(defn restart-db
   "Restarts database."
   []
   (mount/stop #'battery-measurements-api.db.core/*db*)
   (mount/start #'battery-measurements-api.db.core/*db*)
   (binding [*ns* 'battery-measurements-api.db.core]
-    (conman/bind-connection battery-measurements-api.db.core/*db* "sql/queries.sql")))
+    (conman/bind-connection battery-measurements-api.db.core/*db* "sql/queries.sql"
+                                                                  "sql/accounts.sql")))
 
-(defn reset-db 
+(defn reset-db
   "Resets database."
   []
   (migrations/migrate ["reset"] (select-keys env [:database-url])))
 
-(defn migrate 
+(defn migrate
   "Migrates database up for all outstanding migrations."
   []
   (migrations/migrate ["migrate"] (select-keys env [:database-url])))
 
-(defn rollback 
+(defn rollback
   "Rollback latest database migration."
   []
   (migrations/migrate ["rollback"] (select-keys env [:database-url])))
 
-(defn create-migration 
+(defn create-migration
   "Create a new up and down migration file with a generated timestamp and `name`."
   [name]
   (migrations/create name (select-keys env [:database-url])))

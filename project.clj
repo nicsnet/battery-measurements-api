@@ -58,7 +58,7 @@
 
    :dev           [:project/dev :profiles/dev]
    :test          [:project/dev :project/test :profiles/test]
-   :kaocha {:dependencies [[lambdaisland/kaocha "0.0-418"]
+   :kaocha {:dependencies [[lambdaisland/kaocha "0.0-529"]
                            [lambdaisland/kaocha-cloverage "0.0-32"]]}
 
    :project/dev  {:jvm-opts ["-Dconf=dev-config.edn"]

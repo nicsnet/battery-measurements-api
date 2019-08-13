@@ -5,8 +5,22 @@
             [battery-measurements-api.db.core :as db]
             [battery-measurements-api.measurements :as m]))
 
+(def excluded {:exclude-devices (db/us-devices) :exclude-ip-addresses (db/ignored-ips)})
+
+(def spree-params (merge excluded {:spree true}))
+
+(def eaton-params (merge excluded {:spree false}))
+
+(defn online-sprees [] (:total (db/online spree-params)))
+
+(defn online-eatons [] (:total (db/online eaton-params)))
+
+(defn offline-sprees [] (:total (db/offline spree-params)))
+
+(defn offline-eatons [] (:total (db/offline eaton-params)))
+
 (defn account-timezone [serial]
-  (:timezone (db/get-account {:serial serial})))
+  (:timezone (db/get-account-by-serial {:serial serial})))
 
 (defn acccount-attributes [settings serial]
   (let [measurement (m/first-measurement serial)]
@@ -21,7 +35,7 @@
 
 (defn find-or-create-account! [serial]
   "Tries first to find an account and if not creates one and returns it"
-  (if-let [account (db/get-account {:serial serial})]
+  (if-let [account (db/get-account-by-serial {:serial serial})]
     account
     (if-let [machine_setting (db/get-machine-setting {:serial serial})]
       (do
@@ -30,7 +44,7 @@
           (db/create-account! {:id serial
                                :serial serial
                                :spree_version 1}))
-          (db/get-account {:serial serial})))))
+          (db/get-account-by-serial {:serial serial})))))
 
 (defn update-account! [settings serial]
   (conman/with-transaction [db/*db*]
