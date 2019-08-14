@@ -44,16 +44,44 @@
                         :hw_version 8.5
                         :last_seen_at last-seen})))
 
+(def online-spree
+  (let [last-seen (local-date-time)]
+    (merge timestamps  {:serial (rand-int 10000)
+                        :wan_ip "not_in_wipo"
+                        :spree_version 1
+                        :hw_version 8
+                        :last_seen_at last-seen})))
 
+(def online-spree-in-wipo
+  (let [last-seen (local-date-time)]
+    (merge timestamps  {:serial (rand-int 10000)
+                        :wan_ip in-wipo
+                        :spree_version 2
+                        :hw_version 8.5
+                        :last_seen_at last-seen})))
+
+(def online-eaton-in-us
+  (let [last-seen (local-date-time)]
+    (merge timestamps  {:serial in-us
+                        :wan_ip "in-us"
+                        :spree_version 0
+                        :hw_version 4
+                        :last_seen_at last-seen})))
+
+(defn create-machine-setting-us []
+  (db/create-machine-setting! {:serial in-us
+                               :key "update_channel"
+                               :value "us-stable"
+                               :version (rand-int 10)}))
 (defn seed-db [db-connection]
+  (create-machine-setting-us)
   (jdbc/insert-multi! db-connection :accounts
-                      [(merge timestamps {:serial (rand-int 10000) :wan_ip in-wipo :spree_version 0 :hw_version 5})
-                       (merge timestamps {:serial in-us :wan_ip "in-us" :spree_version 0 :hw_version 5})
+                      [online-spree-in-wipo
+                       online-eaton-in-us
                        online-spree
                        offline-spree
                        online-eaton
-                       offline-eaton])
-  (db/create-machine-setting! {:serial in-us :key "update_channel" :value "us-stable" :version (rand-int 10)}))
+                       offline-eaton]))
 
 (use-fixtures
   :once
