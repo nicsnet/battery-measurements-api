@@ -22,7 +22,7 @@
 (defn account-timezone [serial]
   (:timezone (db/get-account-by-serial {:serial serial})))
 
-(defn acccount-attributes [settings serial]
+(defn account-attributes [settings serial]
   (let [measurement (m/first-measurement serial)]
     (merge (into {} {:spree_version (:spree_version settings)
                      :specified_capacity (:capacity_kw settings)
@@ -49,4 +49,4 @@
 (defn update-account! [settings serial]
   (conman/with-transaction [db/*db*]
     (timbre/info "Update account record for serial" serial)
-    (db/update-account! (acccount-attributes settings serial))))
+    (db/update-account! (account-attributes settings serial))))
