@@ -5,19 +5,17 @@
             [battery-measurements-api.db.core :as db]
             [battery-measurements-api.measurements :as m]))
 
-(def excluded {:exclude-devices (db/us-devices) :exclude-ip-addresses (db/ignored-ips)})
+;; -- :name foo :? :1
+;; -- :require [myapp.db.common-sql :as common]
+;; select * from foos where /~* (common/id-eq) *~/
 
-(def spree-params (merge excluded {:spree true}))
+(defn online-sprees [] (:total (db/online {:spree true})))
 
-(def eaton-params (merge excluded {:spree false}))
+(defn online-eatons [] (:total (db/online {:spree false})))
 
-(defn online-sprees [] (:total (db/online spree-params)))
+(defn offline-sprees [] (:total (db/offline {:spree true})))
 
-(defn online-eatons [] (:total (db/online eaton-params)))
-
-(defn offline-sprees [] (:total (db/offline spree-params)))
-
-(defn offline-eatons [] (:total (db/offline eaton-params)))
+(defn offline-eatons [] (:total (db/offline {:spree false})))
 
 (defn account-timezone [serial]
   (:timezone (db/get-account-by-serial {:serial serial})))
