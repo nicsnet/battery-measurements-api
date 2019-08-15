@@ -5,10 +5,6 @@
             [battery-measurements-api.db.core :as db]
             [battery-measurements-api.measurements :as m]))
 
-;; -- :name foo :? :1
-;; -- :require [myapp.db.common-sql :as common]
-;; select * from foos where /~* (common/id-eq) *~/
-
 (defn online-sprees [] (:total (db/online {:spree true})))
 
 (defn online-eatons [] (:total (db/online {:spree false})))
