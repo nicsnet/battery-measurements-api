@@ -140,24 +140,8 @@
   (jdbc/with-db-transaction [con *db*]
     (jdbc/db-set-rollback-only! con)
     (seed-db con)
-    (is (= {:total 1} (db/offline
-                       con
-                       {:spree false
-                        :exclude-devices (db/us-devices)
-                        :exclude-ip-addresses (db/ignored-ips)})))
-    (is (= {:total 1} (db/offline
-                       con
-                       {:spree true
-                        :exclude-devices (db/us-devices)
-                        :exclude-ip-addresses (db/ignored-ips)})))
-    (is (= {:total 1} (db/online
-                       con
-                       {:spree false
-                        :exclude-devices (db/us-devices)
-                        :exclude-ip-addresses (db/ignored-ips)})))
-    (is (= {:total 1} (db/online
-                       con
-                       {:spree true
-                        :exclude-devices (db/us-devices)
-                        :exclude-ip-addresses (db/ignored-ips)})))
+    (is (= {:total 1} (db/offline con {:spree false})))
+    (is (= {:total 1} (db/offline con {:spree true})))
+    (is (= {:total 1} (db/online con {:spree false})))
+    (is (= {:total 1} (db/online con {:spree true})))
     (is (= [{:total 6}] (jdbc/query con ["select count(*) as total from accounts"])))))

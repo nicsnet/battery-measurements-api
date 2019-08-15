@@ -28,42 +28,27 @@ update accounts
  where serial = :serial
 
 -- :name online :? :1
+-- :require [battery-measurements-api.db.helpers :refer [ignored-ips excluded-us-devices]]
 -- :doc count the number of currently online batteries
 -- You can pass {:spree true} to check for spree batteries and {:spree false} for eatons
 select count(*) as total from accounts
-  where serial not in (:snip:exclude-devices)
-    :snip:exclude-ip-addresses
+  where serial not in /*~ (excluded-us-devices) ~*/
     /*~ (if (:spree params) */
     and last_seen_at > UTC_TIMESTAMP() - interval 15 minute and (spree_version > 0 or hw_version >= 8)
     /*~*/
     and (last_seen_at > UTC_TIMESTAMP() - interval 12 hour) and spree_version = 0
     /*~ ) ~*/
+    and wan_ip not in /*~ (ignored-ips) ~*/
 
 -- :name offline :? :1
+-- :require [battery-measurements-api.db.helpers :refer [ignored-ips excluded-us-devices]]
 -- :doc count the number of currently offline batteries
 -- You can pass {:spree true} to check for spree batteries and {:spree false} for eatons
 select count(*) as total from accounts
-  where serial not in (:snip:exclude-devices)
-    :snip:exclude-ip-addresses
+  where serial not in /*~ (excluded-us-devices) ~*/
     /*~ (if (:spree params) */
     and (last_seen_at < UTC_TIMESTAMP() - interval 15 minute) and (spree_version > 0 or hw_version >= 8)
     /*~*/
     and (last_seen_at < UTC_TIMESTAMP() - interval 12 hour or last_seen_at is null) and spree_version = 0
     /*~ ) ~*/
-
--- :snip us-devices
-select distinct serial from machine_settings
- where `key` = 'update_channel' and `value` = 'us-stable'
-
--- :snip ignored-ips
-and wan_ip not in ('178.19.214.131',
-                   '185.19.198.179',
-                   '213.182.26.2',
-                   '24.134.68.117',
-                   '24.134.7.229',
-                   '58.171.8.1',
-                   '61.88.9.98',
-                   '73.207.249.142',
-                   '75.52.246.30',
-                   '96.89.71.241',
-                   '96.89.71.243')
+    and wan_ip not in /*~ (ignored-ips) ~*/
