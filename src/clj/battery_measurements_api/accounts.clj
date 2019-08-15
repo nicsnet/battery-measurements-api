@@ -33,18 +33,19 @@
                      :serial serial
                      :last_seen_at (time/local-date-time)}) measurement)))
 
-(defn find-or-create-account! [serial]
+(defn find-or-create-account!
   "Tries first to find an account and if not creates one and returns it"
+  [serial]
   (if-let [account (db/get-account-by-serial {:serial serial})]
     account
-    (if-let [machine_setting (db/get-machine-setting {:serial serial})]
+    (if (db/get-machine-setting {:serial serial})
       (do
         (conman/with-transaction [db/*db*]
           (timbre/info "Creating new account")
           (db/create-account! {:id serial
                                :serial serial
                                :spree_version 1}))
-          (db/get-account-by-serial {:serial serial})))))
+        (db/get-account-by-serial {:serial serial})))))
 
 (defn update-account! [settings serial]
   (conman/with-transaction [db/*db*]

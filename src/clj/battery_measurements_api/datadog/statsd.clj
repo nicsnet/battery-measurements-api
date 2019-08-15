@@ -11,15 +11,15 @@
 ;; Time in ms for the intervals of sending metrics to datadog
 (def interval-in-ms 120000)
 
-(defn send-datadog-metrics []
+(defn send-datadog-metrics
   "Sends metrics to the datadog agent with the totals of currently online/offline batteries"
+  []
   (dogstatsd/configure! (env :datadog-agent-url) {:tags {:env env}})
   (go (loop [] (<! (timeout interval-in-ms))
-            (do
-              (dogstatsd/gauge! "core.battery.eaton.online" (online-eatons))
-              (dogstatsd/gauge! "core.battery.eaton.offline" (offline-eatons))
-              (dogstatsd/gauge! "core.battery.spree.offline" (offline-sprees))
-              (dogstatsd/gauge! "core.battery.spree.online" (online-sprees)))
+            (dogstatsd/gauge! "core.battery.eaton.online" (online-eatons))
+            (dogstatsd/gauge! "core.battery.eaton.offline" (offline-eatons))
+            (dogstatsd/gauge! "core.battery.spree.offline" (offline-sprees))
+            (dogstatsd/gauge! "core.battery.spree.online" (online-sprees))
             (recur))))
 
 (mount/defstate ^:dynamic datadog-agent

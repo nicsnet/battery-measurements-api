@@ -1,10 +1,8 @@
 (ns battery-measurements-api.settings
   (:require [clojure.spec.alpha :as s]
-            [clojure.set :refer [rename-keys]]
             [conman.core :as conman]
             [java-time :as time]
             [taoensso.timbre :as timbre]
-            [battery-measurements-api.accounts :as a]
             [battery-measurements-api.measurements :as m]
             [battery-measurements-api.db.core :as db]))
 
