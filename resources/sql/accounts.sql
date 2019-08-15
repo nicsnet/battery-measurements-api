@@ -31,31 +31,25 @@ update accounts
 -- :doc count the number of currently online batteries
 -- You can pass {:spree true} to check for spree batteries and {:spree false} for eatons
 select count(*) as total from accounts
- where
-   /*~ (if (:spree params) */
-   last_seen_at > UTC_TIMESTAMP() - interval 15 minute
-   and (spree_version > 0 or hw_version >= 8)
-   /*~*/
-   last_seen_at > UTC_TIMESTAMP() - interval 12 hour
-   and spree_version = 0
-   /*~ ) ~*/
-   :snip:exclude-ip-addresses
-   and serial not in (:snip:exclude-devices)
+  where serial not in (:snip:exclude-devices)
+    :snip:exclude-ip-addresses
+    /*~ (if (:spree params) */
+    and last_seen_at > UTC_TIMESTAMP() - interval 15 minute and (spree_version > 0 or hw_version >= 8)
+    /*~*/
+    and (last_seen_at > UTC_TIMESTAMP() - interval 12 hour) and spree_version = 0
+    /*~ ) ~*/
 
 -- :name offline :? :1
 -- :doc count the number of currently offline batteries
 -- You can pass {:spree true} to check for spree batteries and {:spree false} for eatons
 select count(*) as total from accounts
- where
-   /*~ (if (:spree params) */
-   last_seen_at < UTC_TIMESTAMP() - interval 15 minute
-   and (spree_version > 0 or hw_version >= 8)
-   /*~*/
-   (last_seen_at < UTC_TIMESTAMP() - interval 12 hour or last_seen_at is null)
-   and spree_version = 0
-   /*~ ) ~*/
-   :snip:exclude-ip-addresses
-   and serial not in (:snip:exclude-devices)
+  where serial not in (:snip:exclude-devices)
+    :snip:exclude-ip-addresses
+    /*~ (if (:spree params) */
+    and (last_seen_at < UTC_TIMESTAMP() - interval 15 minute) and (spree_version > 0 or hw_version >= 8)
+    /*~*/
+    and (last_seen_at < UTC_TIMESTAMP() - interval 12 hour or last_seen_at is null) and spree_version = 0
+    /*~ ) ~*/
 
 -- :snip us-devices
 select distinct serial from machine_settings
