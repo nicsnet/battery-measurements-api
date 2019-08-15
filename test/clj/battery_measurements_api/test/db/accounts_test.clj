@@ -29,13 +29,6 @@
                         :hw_version 5
                         :last_seen_at last-seen})))
 
-(def online-spree
-  (let [last-seen (local-date-time)]
-    (merge timestamps  {:serial (rand-int 10000)
-                        :wan_ip "not_in_wipo"
-                        :spree_version 1
-                        :hw_version 8
-                        :last_seen_at last-seen})))
 (def offline-spree
   (let [last-seen (minus (local-date-time) (minutes 30))]
     (merge timestamps  {:serial (rand-int 10000)
