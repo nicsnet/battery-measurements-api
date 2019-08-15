@@ -33,5 +33,11 @@ services:
       MYSQL_USER: sonnen
       MYSQL_PASSWORD: sonnen
 
+  datadog-agent:
+    image: jonmorehouse/dogstatsd-local
+    ports:
+      - "8125:8125"
+    command: "-format human"
+
 volumes:
   data-store:

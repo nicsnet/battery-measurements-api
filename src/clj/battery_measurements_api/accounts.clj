@@ -5,10 +5,24 @@
             [battery-measurements-api.db.core :as db]
             [battery-measurements-api.measurements :as m]))
 
-(defn account-timezone [serial]
-  (:timezone (db/get-account {:serial serial})))
+(def excluded {:exclude-devices (db/us-devices) :exclude-ip-addresses (db/ignored-ips)})
 
-(defn acccount-attributes [settings serial]
+(def spree-params (merge excluded {:spree true}))
+
+(def eaton-params (merge excluded {:spree false}))
+
+(defn online-sprees [] (:total (db/online spree-params)))
+
+(defn online-eatons [] (:total (db/online eaton-params)))
+
+(defn offline-sprees [] (:total (db/offline spree-params)))
+
+(defn offline-eatons [] (:total (db/offline eaton-params)))
+
+(defn account-timezone [serial]
+  (:timezone (db/get-account-by-serial {:serial serial})))
+
+(defn account-attributes [settings serial]
   (let [measurement (m/first-measurement serial)]
     (merge (into {} {:spree_version (:spree_version settings)
                      :specified_capacity (:capacity_kw settings)
@@ -19,20 +33,21 @@
                      :serial serial
                      :last_seen_at (time/local-date-time)}) measurement)))
 
-(defn find-or-create-account! [serial]
+(defn find-or-create-account!
   "Tries first to find an account and if not creates one and returns it"
-  (if-let [account (db/get-account {:serial serial})]
+  [serial]
+  (if-let [account (db/get-account-by-serial {:serial serial})]
     account
-    (if-let [machine_setting (db/get-machine-setting {:serial serial})]
+    (if (db/get-machine-setting {:serial serial})
       (do
         (conman/with-transaction [db/*db*]
           (timbre/info "Creating new account")
           (db/create-account! {:id serial
                                :serial serial
                                :spree_version 1}))
-          (db/get-account {:serial serial})))))
+        (db/get-account-by-serial {:serial serial})))))
 
 (defn update-account! [settings serial]
   (conman/with-transaction [db/*db*]
     (timbre/info "Update account record for serial" serial)
-    (db/update-account! (acccount-attributes settings serial))))
+    (db/update-account! (account-attributes settings serial))))
