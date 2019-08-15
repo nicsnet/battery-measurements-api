@@ -2,7 +2,7 @@
   (:require
    [battery-measurements-api.db.core :refer [*db*] :as db]
    [luminus-migrations.core :as migrations]
-   [clojure.test :refer :all]
+   [clojure.test :refer [use-fixtures deftest is]]
    [clojure.java.jdbc :as jdbc]
    [battery-measurements-api.config :refer [env]]
    [java-time :refer [local-date-time hours minus days minutes]]
