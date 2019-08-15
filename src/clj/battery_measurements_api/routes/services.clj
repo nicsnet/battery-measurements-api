@@ -8,7 +8,7 @@
             [reitit.ring.middleware.parameters :as parameters]
             [reitit.swagger :as swagger]
             [reitit.swagger-ui :as swagger-ui]
-            [ring.util.http-response :refer :all]
+            [ring.util.http-response :refer [ok not-found bad-request]]
             [taoensso.timbre :as timbre]
             [battery-measurements-api.middleware.formats :as formats]
             [battery-measurements-api.middleware.exception :as exception]
@@ -21,9 +21,9 @@
 (s/def ::id int?)
 (s/def ::timestamp string?)
 (s/def ::cellpack-data (s/keys :req-un [::cellpack-data/bms_sony
-                               ::timestamp
-                               ::id
-                               ::measurements/measurements]))
+                                        ::timestamp
+                                        ::id
+                                        ::measurements/measurements]))
 
 (s/def ::rows (s/coll-of ::cellpack-data))
 (s/def ::operating-data (s/keys :req-un [::settings/settings ::rows]))
@@ -33,8 +33,9 @@
 
 (def response-code-mapping {:failure 0 :success 2})
 
-(defn response-codes [rows type]
+(defn response-codes
   "Returns a map with ids as keys and values for success or failure codes"
+  [rows type]
   (let [code (type response-code-mapping)
         ids (remove #(nil? %) (map :id rows))]
     (zipmap ids (repeat code))))
@@ -42,11 +43,11 @@
 (defn process-data! [settings rows serial]
   (if-let [account-serial (:serial (fetch-account serial))]
     (try
-      (do (measurements/create-measurements! rows account-serial)
-          (cellpack-data/create-cellpack-data! rows account-serial)
-          (settings/create-machine-statuses! settings account-serial)
-          (accounts/update-account! settings account-serial)
-          (ok (response-codes rows :success)))
+      (measurements/create-measurements! rows account-serial)
+      (cellpack-data/create-cellpack-data! rows account-serial)
+      (settings/create-machine-statuses! settings account-serial)
+      (accounts/update-account! settings account-serial)
+      (ok (response-codes rows :success))
       (catch Exception e
         (timbre/log :error e)
         (bad-request (response-codes rows :failure))))
@@ -89,8 +90,8 @@
 
     ["/api-docs/*"
      {:get (swagger-ui/create-swagger-ui-handler
-             {:url "/havel/swagger.json"
-              :config {:validator-url nil}})}]]
+            {:url "/havel/swagger.json"
+             :config {:validator-url nil}})}]]
 
    ["/units/:unit-serial"
     {:swagger {:tags ["operating_data"]}}

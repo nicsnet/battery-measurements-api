@@ -5,6 +5,7 @@
     [luminus.http-server :as http]
     [luminus-migrations.core :as migrations]
     [battery-measurements-api.config :refer [env]]
+    [battery-measurements-api.datadog.statsd :refer [datadog-agent]]
     [clojure.tools.cli :refer [parse-opts]]
     [clojure.tools.logging :as log]
     [mount.core :as mount])

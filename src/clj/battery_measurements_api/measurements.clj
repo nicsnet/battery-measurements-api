@@ -31,8 +31,9 @@
    :production :m04
    :state_of_charge :m05})
 
-(defn assign-charge-and-discharge [measurement]
+(defn assign-charge-and-discharge
   "Assigns the values for charge and discharge for a given measurement"
+  [measurement]
   (let [{charge :charge
          discharge :discharge} measurement]
     (assoc measurement :discharge (if (pos-int? discharge) discharge 0)

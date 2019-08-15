@@ -32,6 +32,7 @@
                         "Affinities": null,
                         "Env": {
                             "DATABASE_URL": "${PRODUCTION_DATABASE_URL}",
+                            "DATADOG_AGENT_URL": "116.203.80.78:8125",
                             "PORT": "8081"
                         },
                         "Services": [

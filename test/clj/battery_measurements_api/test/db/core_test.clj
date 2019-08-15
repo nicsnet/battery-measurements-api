@@ -2,7 +2,7 @@
   (:require
     [battery-measurements-api.db.core :refer [*db*] :as db]
     [luminus-migrations.core :as migrations]
-    [clojure.test :refer :all]
+    [clojure.test :refer [use-fixtures deftest is]]
     [clojure.java.jdbc :as jdbc]
     [battery-measurements-api.config :refer [env]]
     [mount.core :as mount]))
@@ -29,47 +29,6 @@
 (def cellpack-test-data
   [[123 (java.time.LocalDateTime/now) 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23]
    [999 (java.time.LocalDateTime/now) 11 22 33 44 55 66 77 88 99 100 111 122 133 144 155 166 177 188 199 200 210 222 233]])
-
-(deftest test-accounts
-  (let [timestamp (java.time.LocalDateTime/now)
-        update-params {:spree_version 5
-                       :serial 123
-                       :specified_capacity 2
-                       :specified_pv_capacity 4
-                       :inverter_power 3
-                       :timezone "UTC"
-                       :online true
-                       :last_seen_at timestamp
-                       :measured_at timestamp
-                       :production 2
-                       :charge 6
-                       :discharge 7
-                       :consumption 1
-                       :state_of_charge 2}]
-    (jdbc/with-db-transaction [t-conn *db*]
-      (jdbc/db-set-rollback-only! t-conn)
-      (is (= 1 (db/create-account!
-                t-conn
-                {:id 1
-                 :serial 123
-                 :spree_version 2})))
-      (is (= {:id         1
-              :serial 123
-              :spree_version 2}
-             (-> (db/get-account t-conn {:serial 123})
-                 (select-keys [:id :serial :spree_version]))))
-      (is (= 1 (db/update-account! t-conn update-params)))
-      (is (= {:spree_version 5
-              :serial 123
-              :timezone "UTC"
-              :online true
-              :production 2
-              :charge 6
-              :discharge 7
-              :consumption 1
-              :state_of_charge 2}
-             (-> (db/get-account t-conn {:serial 123})
-                 (select-keys account-fields)))))))
 
 (deftest test-measurements
   (jdbc/with-db-transaction [t-conn *db*]

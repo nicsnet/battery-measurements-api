@@ -1,7 +1,7 @@
 (ns battery-measurements-api.test.handler-test
   (:require
     [clojure.data.json :as json]
-    [clojure.test :refer :all]
+    [clojure.test :refer [deftest testing is use-fixtures]]
     [ring.mock.request :refer :all]
     [battery-measurements-api.handler :refer :all]
     [battery-measurements-api.middleware.formats :as formats]

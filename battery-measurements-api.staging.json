@@ -32,6 +32,7 @@
                         "Affinities": null,
                         "Env": {
                             "DATABASE_URL": "${STAGING_DATABASE_URL}",
+                            "DATADOG_AGENT_URL": "",
                             "PORT": "8080"
                         },
                         "Services": [
