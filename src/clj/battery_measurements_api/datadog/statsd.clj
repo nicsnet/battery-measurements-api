@@ -1,8 +1,9 @@
 (ns battery-measurements-api.datadog.statsd
-  (:require [battery-measurements-api.accounts :refer [online-eatons
-                                                       online-sprees
-                                                       offline-eatons
-                                                       offline-sprees]]
+  (:require [battery-measurements-api.accounts
+              :refer [online-eatons
+                      online-sprees
+                      offline-eatons
+                      offline-sprees]]
             [battery-measurements-api.config :refer [env]]
             [clojure.core.async :refer [go <! timeout close!]]
             [cognician.dogstatsd :as dogstatsd]
