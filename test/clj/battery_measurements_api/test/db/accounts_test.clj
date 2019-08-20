@@ -2,7 +2,7 @@
   (:require
    [battery-measurements-api.db.core :refer [*db*] :as db]
    [luminus-migrations.core :as migrations]
-   [clojure.test :refer [use-fixtures deftest is]]
+   [clojure.test :refer [use-fixtures deftest is testing]]
    [clojure.java.jdbc :as jdbc]
    [battery-measurements-api.config :refer [env]]
    [java-time :refer [local-date-time hours minus days minutes]]
@@ -61,13 +61,31 @@
                         :hw_version 4
                         :last_seen_at last-seen})))
 
-(defn create-machine-setting-us []
+(def outdated
+  (let [fetched-at (minus (local-date-time) (days 8))]
+    (merge timestamps {:serial (rand-int 10000)
+                       :fetched_at fetched-at})))
+
+(def kind-of-current
+  (let [fetched-at (minus (local-date-time) (days 5))]
+    (merge timestamps {:serial (rand-int 10000)
+                       :fetched_at fetched-at})))
+
+(def current
+  (let [fetched-at (minus (local-date-time) (days 1))]
+    (merge timestamps {:serial (rand-int 10000)
+                       :fetched_at fetched-at})))
+
+(defn create-machine-setting-us! []
   (db/create-machine-setting! {:serial in-us
                                :key "update_channel"
                                :value "us-stable"
                                :version (rand-int 10)}))
-(defn seed-db [db-connection]
-  (create-machine-setting-us)
+
+(defn create-online-offline-batteries!
+  "Seeds the db with online and offline batteries"
+  [db-connection]
+  (create-machine-setting-us!)
   (jdbc/insert-multi! db-connection :accounts
                       [online-spree-in-wipo
                        online-eaton-in-us
@@ -75,6 +93,11 @@
                        offline-spree
                        online-eaton
                        offline-eaton]))
+
+(defn create-current-and-outdated!
+  "Seeds the db with current and outdated batteries"
+  [db-connection]
+  (jdbc/insert-multi! db-connection :accounts [outdated current kind-of-current]))
 
 (use-fixtures
   :once
@@ -136,12 +159,21 @@
              (-> (db/get-account-by-serial con {:serial 123})
                  (select-keys account-fields)))))))
 
-(deftest online-offline-db-queries
-  (jdbc/with-db-transaction [con *db*]
-    (jdbc/db-set-rollback-only! con)
-    (seed-db con)
-    (is (= {:total 1} (db/offline con {:spree false})))
-    (is (= {:total 1} (db/offline con {:spree true})))
-    (is (= {:total 1} (db/online con {:spree false})))
-    (is (= {:total 1} (db/online con {:spree true})))
-    (is (= [{:total 6}] (jdbc/query con ["select count(*) as total from accounts"])))))
+(deftest monitoring-queries
+  (testing "queries for monitoring online/offline status"
+    (jdbc/with-db-transaction [con *db*]
+      (jdbc/db-set-rollback-only! con)
+      (create-online-offline-batteries! con)
+      (is (= {:total 1} (db/offline con {:spree false})))
+      (is (= {:total 1} (db/offline con {:spree true})))
+      (is (= {:total 1} (db/online con {:spree false})))
+      (is (= {:total 1} (db/online con {:spree true})))
+      (is (= [{:total 6}] (jdbc/query con ["select count(*) as total from accounts"])))))
+
+  (testing "queries for current and outdated data"
+    (jdbc/with-db-transaction [con *db*]
+      (jdbc/db-set-rollback-only! con)
+      (create-current-and-outdated! con)
+      (is (= {:total 2} (db/current con nil)))
+      (is (= {:total 1} (db/outdated con nil)))
+      (is (= [{:total 3}] (jdbc/query con ["select count(*) as total from accounts"]))))))

@@ -52,3 +52,11 @@ select count(*) as total from accounts
     and (last_seen_at < UTC_TIMESTAMP() - interval 12 hour or last_seen_at is null) and spree_version = 0
     /*~ ) ~*/
     and wan_ip not in /*~ (ignored-ips) ~*/
+
+-- :name current :? :1
+-- :doc count the number of batteries with current data less than a week old
+select count(*) as total from accounts where fetched_at > UTC_TIMESTAMP() - interval 1 week
+
+-- :name outdated :? :1
+-- :doc count the number of batteries with outdated data more than a week old
+select count(*) as total from accounts where fetched_at < UTC_TIMESTAMP() - interval 1 week
