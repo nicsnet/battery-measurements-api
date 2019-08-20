@@ -19,4 +19,10 @@
 
   (testing "find our create account"
     (with-redefs [db/get-account-by-serial (fn [_] "my account")]
-      (is (= "my account"  (find-or-create-account! 1234))))))
+      (is (= "my account"  (find-or-create-account! 1234)))))
+
+  (testing "current/oudated battery counts"
+    (with-redefs [db/current (fn [_] {:total 100})
+                  db/outdated (fn [_] {:total 1})]
+      (is (= 100 (current)))
+      (is (= 1 (outdated))))))
