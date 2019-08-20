@@ -3,7 +3,9 @@
               :refer [online-eatons
                       online-sprees
                       offline-eatons
-                      offline-sprees]]
+                      offline-sprees
+                      current
+                      outdated]]
             [battery-measurements-api.config :refer [env]]
             [clojure.core.async :refer [go <! timeout close!]]
             [cognician.dogstatsd :as dogstatsd]
