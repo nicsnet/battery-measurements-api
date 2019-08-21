@@ -13,6 +13,10 @@
 
 (defn offline-eatons [] (:total (db/offline {:spree false})))
 
+(defn current [] (:total (db/current nil)))
+
+(defn outdated [] (:total (db/outdated nil)))
+
 (defn account-timezone [serial]
   (:timezone (db/get-account-by-serial {:serial serial})))
 
