@@ -207,10 +207,10 @@
   "settings": {
     "TimezoneOffset": 2,
     "capacity_kw": 0,
-    "inverter_power_kw": 4.40,
+    "inverter_power_kw": "4.40",
     "marketing_module_capacity": 22,
     "maxfeedin_percent": 100,
-    "pvsize_kw": 3.30,
+    "pvsize_kw": "3.30",
     "timezone": "UTC",
     "spree_version": 1
   }
