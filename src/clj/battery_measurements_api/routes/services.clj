@@ -1,5 +1,7 @@
 (ns battery-measurements-api.routes.services
-  (:require [clojure.spec.alpha :as s]
+  (:require [battery-measurements-api.config :refer [env]]
+            [clojure.spec.alpha :as s]
+            [raven-clj.core :refer [capture]]
             [reitit.coercion.spec :as spec-coercion]
             [reitit.dev.pretty :as pretty]
             [reitit.ring.coercion :as coercion]
@@ -16,6 +18,8 @@
             [battery-measurements-api.cellpack-data :as cellpack-data]
             [battery-measurements-api.measurements :as measurements]
             [battery-measurements-api.settings :as settings]))
+
+(def dsn (:sentry-url env))
 
 (s/def ::import-response (s/keys))
 (s/def ::id int?)
@@ -50,6 +54,7 @@
       (ok (response-codes rows :success))
       (catch Exception e
         (timbre/log :error e)
+        (capture dsn {:message e})
         (bad-request (response-codes rows :failure))))
     (not-found)))
 

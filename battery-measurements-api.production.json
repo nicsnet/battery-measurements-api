@@ -33,6 +33,7 @@
                         "Env": {
                             "DATABASE_URL": "${PRODUCTION_DATABASE_URL}",
                             "DATADOG_AGENT_URL": "116.203.80.78:8125",
+                            "SENTRY_URL": "https://185dca28f02c4334b30177c5b14f2193:4db048a7a8c641488d7554ac2d550cc5@sentry.sonnenbatterie.de/54",
                             "PORT": "8081"
                         },
                         "Services": [
