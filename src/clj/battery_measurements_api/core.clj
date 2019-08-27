@@ -8,12 +8,21 @@
     [battery-measurements-api.datadog.statsd :refer [datadog-agent]]
     [clojure.tools.cli :refer [parse-opts]]
     [clojure.tools.logging :as log]
+    [raven-clj.core :refer [install-uncaught-exception-handler! capture]]
     [mount.core :as mount])
   (:gen-class))
 
 (def cli-options
   [["-p" "--port PORT" "Port number"
     :parse-fn #(Integer/parseInt %)]])
+
+(def dsn (:sentry-url env))
+
+(defn exception-handler [exception]
+  (capture dsn {:message exception}))
+
+(defn catch-uncaught-exceptions []
+  (install-uncaught-exception-handler! dsn {:handler exception-handler}))
 
 (mount/defstate ^{:on-reload :noop} http-server
   :start
@@ -50,6 +59,7 @@
 
 (defn -main [& args]
   (mount/start #'battery-measurements-api.config/env)
+  (catch-uncaught-exceptions)
   (cond
     (nil? (:database-url env))
     (do

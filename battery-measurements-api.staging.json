@@ -33,6 +33,7 @@
                         "Env": {
                             "DATABASE_URL": "${STAGING_DATABASE_URL}",
                             "DATADOG_AGENT_URL": "no-agent-available",
+                            "SENTRY_URL": "https://95e9c5593fe44102bb620689774772fe:0cd4fa17b99948ea8ca4971f6927a0f1@sentry.sonnenbatterie.de/55",
                             "PORT": "8080"
                         },
                         "Services": [
