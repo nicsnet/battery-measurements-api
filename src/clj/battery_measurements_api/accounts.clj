@@ -1,5 +1,6 @@
 (ns battery-measurements-api.accounts
-  (:require [conman.core :as conman]
+  (:require [clojure.string :refer [blank?]]
+            [conman.core :as conman]
             [java-time :as time]
             [taoensso.timbre :as timbre]
             [battery-measurements-api.db.core :as db]
@@ -17,8 +18,10 @@
 
 (defn outdated [] (:total (db/outdated nil)))
 
-(defn account-timezone [serial]
-  (:timezone (db/get-account-by-serial {:serial serial})))
+(defn account-timezone [timezone serial]
+  (if (not (blank? timezone))
+    timezone
+    (:timezone (db/get-account-by-serial {:serial serial}))))
 
 (defn account-attributes [settings serial]
   (let [measurement (m/first-measurement serial)]
@@ -26,7 +29,7 @@
                      :specified_capacity (:capacity_kw settings)
                      :specified_pv_capacity (:pvsize_kw settings)
                      :inverter_power (:inverter_power_kw settings)
-                     :timezone (account-timezone serial)
+                     :timezone (account-timezone (:timezone settings) serial)
                      :online true
                      :serial serial
                      :last_seen_at (time/local-date-time)}) measurement)))

@@ -15,7 +15,9 @@
 
   (testing "account timezone"
     (with-redefs [db/get-account-by-serial (fn [_] {:timezone "Europe/Berlin"})]
-      (is (= "Europe/Berlin" (a/account-timezone 1234)))))
+      (is (= "Europe/Berlin" (a/account-timezone "" 1234)))
+      (is (= "Europe/Berlin" (a/account-timezone nil 1234)))
+      (is (= "Europe/London" (a/account-timezone "Europe/London" 1234)))))
 
   (testing "find our create account"
     (with-redefs [db/get-account-by-serial (fn [_] "my account")]
