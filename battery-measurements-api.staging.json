@@ -73,7 +73,7 @@
                             }
                         ],
                         "Resources": {
-                            "CPU": 2000,
+                            "CPU": 1000,
                             "MemoryMB": 1024,
                             "DiskMB": null,
                             "Networks": [
