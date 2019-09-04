@@ -41,7 +41,8 @@
                                 "Id": "",
                                 "Name": "battery-measurements-api-staging",
                                 "Tags": [
-                                    "staging"
+                                    "staging",
+                                    "urlprefix-/"
                                 ],
                                 "CanaryTags": null,
                                 "PortLabel": "http",
