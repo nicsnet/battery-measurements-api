@@ -1,0 +1,164 @@
+{
+    "Job": {
+        "Stop": null,
+        "Region": null,
+        "Namespace": null,
+        "ID": "battery-measurments-monitoring",
+        "ParentID": null,
+        "Name": "battery-measurments-monitoring",
+        "Type": "service",
+        "Priority": null,
+        "AllAtOnce": null,
+        "Datacenters": [
+            "nbg1-dc3"
+        ],
+        "Constraints": [
+            {
+                "LTarget": "${node.unique.name}",
+                "RTarget": "nomad-client-1",
+                "Operand": "distinct_property"
+            }
+        ],
+        "Affinities": null,
+        "TaskGroups": [
+            {
+                "Name": "server",
+                "Count": 1,
+                "Constraints": null,
+                "Affinities": null,
+                "Tasks": [
+                    {
+                        "Name": "app",
+                        "Driver": "java",
+                        "User": "",
+                        "Config": {
+                            "jar_path": "local/battery-measurements-api.jar"
+                        },
+                        "Constraints": null,
+                        "Affinities": null,
+                        "Env": {
+                            "DATABASE_URL": "${PRODUCTION_DATABASE_URL}",
+                            "DATADOG_AGENT_URL": "116.203.80.78:8125",
+                            "SENTRY_URL": "https://185dca28f02c4334b30177c5b14f2193:4db048a7a8c641488d7554ac2d550cc5@sentry.sonnenbatterie.de/54",
+                            "PORT": "8080"
+                        },
+                        "Services": [
+                            {
+                                "Id": "",
+                                "Name": "battery-measurements-monitoring",
+                                "Tags": [
+                                    "production", "monitoring"
+                                ],
+                                "CanaryTags": null,
+                                "PortLabel": "http",
+                                "AddressMode": "",
+                                "Checks": [
+                                    {
+                                        "Id": "",
+                                        "Name": "",
+                                        "Type": "http",
+                                        "Command": "",
+                                        "Args": null,
+                                        "Path": "/health",
+                                        "Protocol": "",
+                                        "PortLabel": "",
+                                        "AddressMode": "",
+                                        "Interval": 120000000000,
+                                        "Timeout": 300000000000,
+                                        "InitialStatus": "",
+                                        "TLSSkipVerify": false,
+                                        "Header": null,
+                                        "Method": "",
+                                        "CheckRestart": null,
+                                        "GRPCService": "",
+                                        "GRPCUseTLS": false
+                                    }
+                                ],
+                                "CheckRestart": null
+                            }
+                        ],
+                        "Resources": {
+                            "CPU": 2000,
+                            "MemoryMB": 1024,
+                            "DiskMB": null,
+                            "Networks": [
+                                {
+                                    "Device": "",
+                                    "CIDR": "",
+                                    "IP": "",
+                                    "MBits": null,
+                                    "ReservedPorts": [
+                                        {
+                                            "Label": "http",
+                                            "Value": 8080
+                                        }
+                                    ],
+                                    "DynamicPorts": null
+                                }
+                            ],
+                            "Devices": null,
+                            "IOPS": null
+                        },
+                        "Meta": null,
+                        "KillTimeout": null,
+                        "LogConfig": null,
+                        "Artifacts": [
+                            {
+                                "GetterSource": "https://battery-measurements-api-deployments-production.s3.eu-central-1.amazonaws.com/${CI_COMMIT_SHORT_SHA}/battery-measurements-api.jar",
+                                "GetterOptions": null,
+                                "GetterMode": null,
+                                "RelativeDest": "local/"
+                            }
+                        ],
+                        "Vault": null,
+                        "Templates": null,
+                        "DispatchPayload": null,
+                        "Leader": false,
+                        "ShutdownDelay": 0,
+                        "KillSignal": ""
+                    }
+                ],
+                "Spreads": null,
+                "RestartPolicy": {
+                    "Interval": 300000000000,
+                    "Attempts": 2,
+                    "Delay": 60000000000,
+                    "Mode": "delay"
+                },
+                "ReschedulePolicy": null,
+                "EphemeralDisk": null,
+                "Update": {
+                    "Stagger": null,
+                    "MaxParallel": 1,
+                    "HealthCheck": null,
+                    "MinHealthyTime": null,
+                    "HealthyDeadline": null,
+                    "ProgressDeadline": null,
+                    "Canary": null,
+                    "AutoRevert": true,
+                    "AutoPromote": null
+                },
+                "Migrate": null,
+                "Meta": null
+            }
+        ],
+        "Update": null,
+        "Spreads": null,
+        "Periodic": null,
+        "ParameterizedJob": null,
+        "Dispatched": false,
+        "Payload": null,
+        "Reschedule": null,
+        "Migrate": null,
+        "Meta": null,
+        "VaultToken": null,
+        "Status": null,
+        "StatusDescription": null,
+        "Stable": null,
+        "Version": null,
+        "SubmitTime": null,
+        "CreateIndex": null,
+        "ModifyIndex": null,
+        "JobModifyIndex": null
+    }
+}
