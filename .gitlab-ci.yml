@@ -4,7 +4,7 @@ stages:
   - upload
   - deploy
 
-image: clojure:lein-2.8.1-alpine
+image: clojure:openjdk-11-lein
 
 cache:
   key: ${CI_COMMIT_REF_SLUG}
