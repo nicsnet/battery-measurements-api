@@ -111,6 +111,18 @@ production:nomad-deploy:
   only:
     - master
 
+production:deploy-monitoring:
+  stage: deploy
+  image: $CI_REGISTRY/digital-dev/docker/deploy:latest
+  cache: {}
+  environment:
+    name: production
+    url: http://116.203.80.78:8080
+  variables:
+    GIT_STRATEGY: fetch
+  script: bin/deploy-monitoring.sh
+  only:
+    - master
 
 
 
