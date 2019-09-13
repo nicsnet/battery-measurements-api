@@ -3,9 +3,9 @@
         "Stop": null,
         "Region": null,
         "Namespace": null,
-        "ID": "battery-measurments-monitoring",
+        "ID": "battery-measurments-monitor",
         "ParentID": null,
-        "Name": "battery-measurments-monitoring",
+        "Name": "battery-measurments-monitor",
         "Type": "service",
         "Priority": null,
         "AllAtOnce": null,
@@ -16,7 +16,7 @@
             {
                 "LTarget": "${node.unique.name}",
                 "RTarget": "nomad-client-1",
-                "Operand": "distinct_property"
+                "Operand": "="
             }
         ],
         "Affinities": null,
@@ -39,15 +39,16 @@
                         "Env": {
                             "DATABASE_URL": "${PRODUCTION_DATABASE_URL}",
                             "DATADOG_AGENT_URL": "116.203.80.78:8125",
-                            "SENTRY_URL": "https://185dca28f02c4334b30177c5b14f2193:4db048a7a8c641488d7554ac2d550cc5@sentry.sonnenbatterie.de/54",
-                            "PORT": "8080"
+                            "PORT": "8080",
+                            "SENTRY_URL": "https://185dca28f02c4334b30177c5b14f2193:4db048a7a8c641488d7554ac2d550cc5@sentry.sonnenbatterie.de/54"
                         },
                         "Services": [
                             {
                                 "Id": "",
-                                "Name": "battery-measurements-monitoring",
+                                "Name": "battery-measurements-monitor",
                                 "Tags": [
-                                    "production", "monitoring"
+                                    "production",
+                                    "monitoring"
                                 ],
                                 "CanaryTags": null,
                                 "PortLabel": "http",
