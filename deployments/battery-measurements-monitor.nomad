@@ -39,7 +39,7 @@ job "battery-measurments-monitor" {
 
       # Defines the source of the artifact which should be downloaded
       artifact {
-        source = "https://battery-measurements-api-deployments-staging.s3.eu-central-1.amazonaws.com/${CI_COMMIT_SHORT_SHA}/battery-measurements-api.jar"
+        source = "https://battery-measurements-api-deployments-production.s3.eu-central-1.amazonaws.com/${CI_COMMIT_SHORT_SHA}/battery-measurements-api.jar"
         destination = "local/"
       }
 
@@ -48,7 +48,7 @@ job "battery-measurments-monitor" {
         name = "battery-measurements-monitor"
         port = "http"
 
-        tags = ["production"]
+        tags = ["production", "monitoring"]
 
         check {
           type = "http"

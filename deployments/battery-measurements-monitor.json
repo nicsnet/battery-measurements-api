@@ -47,7 +47,8 @@
                                 "Id": "",
                                 "Name": "battery-measurements-monitor",
                                 "Tags": [
-                                    "production"
+                                    "production",
+                                    "monitoring"
                                 ],
                                 "CanaryTags": null,
                                 "PortLabel": "http",
@@ -104,7 +105,7 @@
                         "LogConfig": null,
                         "Artifacts": [
                             {
-                                "GetterSource": "https://battery-measurements-api-deployments-staging.s3.eu-central-1.amazonaws.com/${CI_COMMIT_SHORT_SHA}/battery-measurements-api.jar",
+                                "GetterSource": "https://battery-measurements-api-deployments-production.s3.eu-central-1.amazonaws.com/${CI_COMMIT_SHORT_SHA}/battery-measurements-api.jar",
                                 "GetterOptions": null,
                                 "GetterMode": null,
                                 "RelativeDest": "local/"
