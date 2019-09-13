@@ -6,7 +6,7 @@ export NOMAD_TOKEN=${NOMAD_TOKEN}
 
 git checkout -B "$CI_BUILD_REF_NAME" "$CI_BUILD_REF"
 
-envsubst < battery-measurements-api.${CI_ENVIRONMENT_SLUG}.json > battery-measurements-api.json
+envsubst < deployments/battery-measurements-api.${CI_ENVIRONMENT_SLUG}.json > battery-measurements-api.json
 git add battery-measurements-api.json
 
 echo "deploying... "

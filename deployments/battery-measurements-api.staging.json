@@ -3,22 +3,16 @@
         "Stop": null,
         "Region": null,
         "Namespace": null,
-        "ID": "battery-measurments-monitoring",
+        "ID": "battery-measurments-api-staging",
         "ParentID": null,
-        "Name": "battery-measurments-monitoring",
+        "Name": "battery-measurments-api-staging",
         "Type": "service",
         "Priority": null,
         "AllAtOnce": null,
         "Datacenters": [
             "nbg1-dc3"
         ],
-        "Constraints": [
-            {
-                "LTarget": "${node.unique.name}",
-                "RTarget": "nomad-client-1",
-                "Operand": "distinct_property"
-            }
-        ],
+        "Constraints": null,
         "Affinities": null,
         "TaskGroups": [
             {
@@ -37,17 +31,17 @@
                         "Constraints": null,
                         "Affinities": null,
                         "Env": {
-                            "DATABASE_URL": "${PRODUCTION_DATABASE_URL}",
-                            "DATADOG_AGENT_URL": "116.203.80.78:8125",
-                            "SENTRY_URL": "https://185dca28f02c4334b30177c5b14f2193:4db048a7a8c641488d7554ac2d550cc5@sentry.sonnenbatterie.de/54",
+                            "DATABASE_URL": "${STAGING_DATABASE_URL}",
+                            "DATADOG_AGENT_URL": "no-agent-available",
+                            "SENTRY_URL": "https://95e9c5593fe44102bb620689774772fe:0cd4fa17b99948ea8ca4971f6927a0f1@sentry.sonnenbatterie.de/55",
                             "PORT": "8080"
                         },
                         "Services": [
                             {
                                 "Id": "",
-                                "Name": "battery-measurements-monitoring",
+                                "Name": "battery-measurements-api-staging",
                                 "Tags": [
-                                    "production", "monitoring"
+                                    "staging"
                                 ],
                                 "CanaryTags": null,
                                 "PortLabel": "http",
@@ -78,7 +72,7 @@
                             }
                         ],
                         "Resources": {
-                            "CPU": 2000,
+                            "CPU": 1000,
                             "MemoryMB": 1024,
                             "DiskMB": null,
                             "Networks": [
@@ -104,7 +98,7 @@
                         "LogConfig": null,
                         "Artifacts": [
                             {
-                                "GetterSource": "https://battery-measurements-api-deployments-production.s3.eu-central-1.amazonaws.com/${CI_COMMIT_SHORT_SHA}/battery-measurements-api.jar",
+                                "GetterSource": "https://battery-measurements-api-deployments-staging.s3.eu-central-1.amazonaws.com/${CI_COMMIT_SHORT_SHA}/battery-measurements-api.jar",
                                 "GetterOptions": null,
                                 "GetterMode": null,
                                 "RelativeDest": "local/"

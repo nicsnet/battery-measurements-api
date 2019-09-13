@@ -3,16 +3,22 @@
         "Stop": null,
         "Region": null,
         "Namespace": null,
-        "ID": "battery-measurments-api-staging",
+        "ID": "battery-measurments-monitor",
         "ParentID": null,
-        "Name": "battery-measurments-api-staging",
+        "Name": "battery-measurments-monitor",
         "Type": "service",
         "Priority": null,
         "AllAtOnce": null,
         "Datacenters": [
             "nbg1-dc3"
         ],
-        "Constraints": null,
+        "Constraints": [
+            {
+                "LTarget": "${node.unique.name}",
+                "RTarget": "nomad-client-1",
+                "Operand": "="
+            }
+        ],
         "Affinities": null,
         "TaskGroups": [
             {
@@ -31,18 +37,17 @@
                         "Constraints": null,
                         "Affinities": null,
                         "Env": {
-                            "DATABASE_URL": "${STAGING_DATABASE_URL}",
-                            "DATADOG_AGENT_URL": "no-agent-available",
-                            "SENTRY_URL": "https://95e9c5593fe44102bb620689774772fe:0cd4fa17b99948ea8ca4971f6927a0f1@sentry.sonnenbatterie.de/55",
-                            "PORT": "8080"
+                            "DATABASE_URL": "${PRODUCTION_DATABASE_URL}",
+                            "DATADOG_AGENT_URL": "116.203.80.78:8125",
+                            "PORT": "8080",
+                            "SENTRY_URL": "https://185dca28f02c4334b30177c5b14f2193:4db048a7a8c641488d7554ac2d550cc5@sentry.sonnenbatterie.de/54"
                         },
                         "Services": [
                             {
                                 "Id": "",
-                                "Name": "battery-measurements-api-staging",
+                                "Name": "battery-measurements-monitor",
                                 "Tags": [
-                                    "staging",
-                                    "urlprefix-/"
+                                    "production"
                                 ],
                                 "CanaryTags": null,
                                 "PortLabel": "http",
@@ -73,7 +78,7 @@
                             }
                         ],
                         "Resources": {
-                            "CPU": 1000,
+                            "CPU": 2000,
                             "MemoryMB": 1024,
                             "DiskMB": null,
                             "Networks": [
