@@ -3,7 +3,6 @@
             [clojure.spec.alpha :as s]
             [conman.core :as conman]
             [java-time :as time]
-            [taoensso.timbre :as timbre]
             [battery-measurements-api.db.core :as db]))
 
 (s/def ::Consumption_W int?)
@@ -15,11 +14,6 @@
                                        ::Pac_total_W
                                        ::Production_W
                                        ::USOC]))
-
-(def timestamp-format "yyyy-MM-dd HH:mm:ss")
-
-(defn str->timestamp [t]
-  (time/local-date-time timestamp-format t))
 
 (defn first-measurement [serial]
   (db/first-measurement {:serial serial}))
@@ -51,7 +45,7 @@
                     :production (:Production_W x)
                     :state_of_charge (:USOC x)
                     :serial serial
-                    :timestamp (str->timestamp (:timestamp x))
+                    :timestamp (:timestamp x)
                     :discharge (:Pac_total_W x)
                     :charge (:Pac_total_W x)} ))
        (map (fn [m] (assign-charge-and-discharge m)))
@@ -60,7 +54,6 @@
 (defn create-measurements! [data serial]
   (let [measurements (convert-measurements data serial)]
     (conman/with-transaction [db/*db*]
-      (timbre/info "Inserting into the measurements table for serial" serial)
       (->> measurements
            (map #(vec (map % [:serial :timestamp :m01 :m02 :m03 :m04 :m05])))
            vec

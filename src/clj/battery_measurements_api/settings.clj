@@ -2,7 +2,6 @@
   (:require [clojure.spec.alpha :as s]
             [conman.core :as conman]
             [java-time :as time]
-            [taoensso.timbre :as timbre]
             [battery-measurements-api.measurements :as m]
             [battery-measurements-api.db.core :as db]))
 
@@ -50,7 +49,6 @@
 (defn create-machine-statuses! [data serial]
   (let [machine-statuses (convert-machine-statuses data serial)]
     (conman/with-transaction [db/*db*]
-      (timbre/info "Inserting into the machine status table for serial" serial)
       (->> machine-statuses
            (map #(vec (map % [:serial :key :value :version :created_at :updated_at])))
            vec
