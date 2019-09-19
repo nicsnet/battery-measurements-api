@@ -2,7 +2,6 @@
   (:require [clojure.spec.alpha :as s]
             [conman.core :as conman]
             [java-time :as time]
-            [taoensso.timbre :as timbre]
             [battery-measurements-api.db.core :as db]))
 
 (s/def ::CC int?)
@@ -52,11 +51,6 @@
                                   ::SS
                                   ::ST_sec
                                   ::SW]))
-
-(def timestamp-format "yyyy-MM-dd HH:mm:ss")
-
-(defn str->timestamp [t]
-  (time/local-date-time timestamp-format t))
 
 (def db-columns
   [:serial
@@ -117,12 +111,11 @@
                       :system_status (:SS x)
                       :system_alarm (:SA x)
                       :system_warning (:SW x)
-                      :timestamp (str->timestamp (:timestamp x))})))))
+                      :timestamp (:timestamp x)})))))
 
 (defn create-cellpack-data! [data serial]
   (let [cellpack-data (convert-cellpack-data data serial)]
     (conman/with-transaction [db/*db*]
-      (timbre/info "Inserting into the cellpack data table for serial" serial)
       (->> cellpack-data
            (map #(vec (map % db-columns)))
            vec
