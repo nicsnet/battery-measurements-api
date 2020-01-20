@@ -24,7 +24,7 @@ select * from machine_settings
 -- :name create-machine-setting! :! :n
 -- :doc creates a new machine setting record
 insert into machine_settings (serial, `key`, `value`, version, created_at, updated_at)
-  value (:serial, :key, :value, :version, current_time, current_time)
+  value (:serial, :key, :value, :version, current_time, current_time) on duplicate key update `value` = :value, updated_at = current_time
 
 -- :name create-machine-statuses! :! :n
 -- :doc creates a number of new machine status records

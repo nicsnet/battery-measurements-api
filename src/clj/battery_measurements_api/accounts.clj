@@ -2,7 +2,6 @@
   (:require [clojure.string :refer [blank?]]
             [conman.core :as conman]
             [java-time :as time]
-            [taoensso.timbre :as timbre]
             [battery-measurements-api.db.core :as db]
             [battery-measurements-api.measurements :as m]))
 
@@ -42,7 +41,6 @@
     (if (db/get-machine-setting {:serial serial})
       (do
         (conman/with-transaction [db/*db*]
-          (timbre/info "Creating new account")
           (db/create-account! {:id serial
                                :serial serial
                                :spree_version 1}))
@@ -50,5 +48,4 @@
 
 (defn update-account! [settings serial]
   (conman/with-transaction [db/*db*]
-    (timbre/info "Update account record for serial" serial)
     (db/update-account! (account-attributes settings serial))))

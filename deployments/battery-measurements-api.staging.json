@@ -72,8 +72,8 @@
                             }
                         ],
                         "Resources": {
-                            "CPU": 1000,
-                            "MemoryMB": 1024,
+                            "CPU": 4000,
+                            "MemoryMB": 7000,
                             "DiskMB": null,
                             "Networks": [
                                 {
