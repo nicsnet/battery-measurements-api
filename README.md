@@ -1,7 +1,7 @@
 # battery-measurements-api
 
 
-The battery measurements api is a service extracted out of the Core api. It is written in Clojure using the [Luminus web framework](http://luminusweb.net/)
+Microservice written in Clojure using the [Luminus web framework](http://luminusweb.net/)
 
 
 ## Prerequisites
